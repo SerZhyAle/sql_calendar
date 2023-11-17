@@ -27,7 +27,7 @@ CREATE TABLE calendar_dates_swap
     #original uniq combination
     date                   date              NOT NULL PRIMARY KEY COMMENT 'YYYY.MM.DD -date',
     date8                  int UNSIGNED      NOT NULL COMMENT 'YYYYMMDD -int',
-    date_ymd               char(10)          NOT NULL COMMENT 'YYYY.MM.DD -char(10)',
+    date_ymd               char(10)          NOT NULL COMMENT 'YYYY-MM-DD -char(10)',
     date_dmy               char(10)          NOT NULL COMMENT 'DD.MM.YYYY -char(10)',
     date_mdy               char(10)          NOT NULL COMMENT 'MM/DD/YYYY -char(10)',
 
@@ -140,8 +140,7 @@ CREATE PROCEDURE service_calendar_dates_population()
 BEGIN
 
     SET @special = NULL;
-    SET @is_public_holiday_se = NULL;
-    SET @is_public_holiday_dk = NULL;
+    SET @is_public_holiday= NULL;
     SET @day_of_period = 1, @period_now = 1, @period_was = 1, @number_of_calendar_week = 1;
 
     SET @day_cursor = '2019.12.31';
@@ -356,10 +355,10 @@ BEGIN
                                             week_fullname)
             VALUES (@day_cursor,
                     DATE_FORMAT(@day_cursor, '%Y%m%d'),
-                    DATE_FORMAT(@day_cursor, '%Y.%m.%d'),
+                    DATE_FORMAT(@day_cursor, '%Y-%m-%d'),
                     DATE_FORMAT(@day_cursor, '%d.%m.%Y'),
                     DATE_FORMAT(@day_cursor, '%d.%m'),
-                    DATE_FORMAT(@day_cursor, '%m.%d.%Y'),
+                    DATE_FORMAT(@day_cursor, '%m/%d/%Y'),
                     DATE_FORMAT(@day_cursor, '%d %b %Y'),
                     DATE_FORMAT(@day_cursor, '%d %M %Y'),
                     @week_day_number, DATE_FORMAT(@day_cursor, '%D'),
@@ -523,7 +522,7 @@ END;
 
  RUN IT!
 
- It takes up to 30 seconds.
+ It takes up to 40 seconds.
  */
 
 CALL service_calendar_dates_population();
