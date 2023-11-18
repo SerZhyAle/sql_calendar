@@ -296,7 +296,7 @@ BEGIN
                                 ELSE 0
                                 END,
                             RIGHT(@calculated_date_hour, 11),
-                            RIGHT(CONCAT(DATE_FORMAT(@day_cursor, '%Y%m%d'), @hour2), 11),
+                            RIGHT(CONCAT(DATE_FORMAT(@day_cursor, '%Y%m%d'), @hour2), 8),
                             RIGHT(@day_cursor, 8),
                             SUBSTR(@cet, 3, 11),
                             RIGHT(@date_cet, 8),
@@ -394,11 +394,10 @@ END;
   STEP 3.
   RUN IT!
 
-  It can take 20-30 seconds
+  It can take up to 30 seconds
  */
 -- _________________________________________________________________ --
 
-#26s
 CALL service_calendar_hours_population();
 
 /*
