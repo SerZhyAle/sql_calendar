@@ -27,96 +27,103 @@
 CREATE TABLE calendar_dates_swap
 (
     -- original uniq combination
-    date                   date         NOT NULL PRIMARY KEY,   -- 'YYYY.MM.DD -date'
+    date                   date         NOT NULL
+        PRIMARY KEY,                              -- 'YYYY-MM-DD -date'
     date8                  int
-        CHECK (date8 > 0)               NOT NULL,               -- 'YYYYMMDD -int'
-    date_ymd               char(10)     NOT NULL,               -- 'YYYY-MM-DD -char(10)'
-    date_dmy               char(10)     NOT NULL,               -- 'DD.MM.YYYY -char(10)'
-    date_mdy               char(10)     NOT NULL,               -- 'MM/DD/YYYY -char(10)'
+        CHECK (date8 > 0)               NOT NULL, -- 'YYYYMMDD -int'
+    date_ymd               char(10)     NOT NULL, -- 'YYYY-MM-DD -char(10)'
+    date_dmy               char(10)     NOT NULL, -- 'DD.MM.YYYY -char(10)'
+    date_mdy               char(10)     NOT NULL, -- 'MM/DD/YYYY -char(10)'
 
     -- data
-    date_ddmm              char(5)      NOT NULL,               -- 'DD.MM -char(5)'
-    date_mmdd              char(5)      NOT NULL,               -- 'MM-DD -char(5)'
-    date_dmmmy             char(11)     NOT NULL,               -- 'DD MMM YYYY -char(11)'
-    date_dmmmmy            varchar(25)  NOT NULL,               -- 'DD Month YYYY -varchar(25)'
+    date_ddmm              char(5)      NOT NULL, -- 'DD.MM -char(5)'
+    date_mmdd              char(5)      NOT NULL, -- 'MM-DD -char(5)'
+    date_dmmmy             char(11)     NOT NULL, -- 'DD MMM YYYY -char(11)'
+    date_dmmmmy            varchar(25)  NOT NULL, -- 'DD Month YYYY -varchar(25)'
     day_of_week            smallint
-        CHECK (day_of_week >= 0)        NOT NULL,               -- 'Day Number in Week 0=sunday -smallint'
-    day_of_week_char       varchar(5)   NOT NULL,               -- 'Name of Number of Day in Week -varchar(5)'
-    is_weekday             bit          NOT NULL,               -- 'True if NOT Saturday and NOT Sunday -bit'
-    is_weekend             bit          NOT NULL,               -- 'True if Saturday or Sunday -bit'
-    is_last_day_of_week    bit          NOT NULL,               -- 'True if Sunday -bit'
-    is_last_day_of_month   bit          NOT NULL,               -- 'True if last day of month -bit'
-    is_last_day_of_quarter bit          NOT NULL,               -- 'True if last day of quarter -bit'
-    is_last_day_of_year    bit          NOT NULL,               -- 'True if last day of year -bit'
-    day_name               varchar(10)  NOT NULL,               -- 'Day Name in Week -varchar(10)'
-    day_name3              char(3)      NOT NULL,               -- 'Day Name in Week -char(3)'
+        CHECK (day_of_week >= 0)        NOT NULL, -- 'Day Number in Week 0=sunday -smallint'
+    day_of_week_char       varchar(5)   NOT NULL, -- 'Name of Number of Day in Week -varchar(5)'
+    is_weekday             bit          NOT NULL, -- 'True if NOT Saturday and NOT Sunday -bit'
+    is_weekend             bit          NOT NULL, -- 'True if Saturday or Sunday -bit'
+    is_last_day_of_week    bit          NOT NULL, -- 'True if Sunday -bit'
+    is_last_day_of_month   bit          NOT NULL, -- 'True if last day of month -bit'
+    is_last_day_of_quarter bit          NOT NULL, -- 'True if last day of quarter -bit'
+    is_last_day_of_year    bit          NOT NULL, -- 'True if last day of year -bit'
+    day_name               varchar(10)  NOT NULL, -- 'Day Name in Week -varchar(10)'
+    day_name3              char(3)      NOT NULL, -- 'Day Name in Week -char(3)'
     day_of_month           smallint
-        CHECK (day_of_month > 0)        NOT NULL,               -- 'Day Number in Month -tinyint'
-    day_of_month2          char(2)      NOT NULL,               -- 'Day Number in Month (0 leads) -char(2)'
-    day_of_month_char      varchar(5)   NOT NULL,               -- 'Name of Number of Day in Month -varchar(5)'
-    day_of_quarter         smallint     NOT NULL,               -- 'Day Number in Quarter -tinyint'
+        CHECK (day_of_month > 0)        NOT NULL, -- 'Day Number in Month -tinyint'
+    day_of_month2          char(2)      NOT NULL, -- 'Day Number in Month (0 leads) -char(2)'
+    day_of_month_char      varchar(5)   NOT NULL, -- 'Name of Number of Day in Month -varchar(5)'
+    day_of_quarter         smallint     NOT NULL, -- 'Day Number in Quarter -tinyint'
     day_of_year            smallint
-        CHECK (day_of_year > 0)         NOT NULL,               -- 'Day Number in Year -smallint'
-    week                   smallint     NOT NULL,               -- 'Week Number in Year (first day-monday) -tinyint'
-    week_num               smallint     NOT NULL,               -- 'Week Number in Year (first day-monday) -tinyint'
-    week_finance           smallint     NOT NULL,               -- 'Week Number (finance) -tinyint'
-    week_fullname          char(23)     NOT NULL,               -- 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)'
-    month                  smallint     NOT NULL,               -- 'Month Number in Year -tinyint'
-    month2                 char(2)      NOT NULL,               -- 'Month Number in Year (0 leads) -char(2)'
-    year_month2            char(7)      NOT NULL,               -- 'Year - Month2 YYYY-MM -char(7)'
-    month_name             varchar(10)  NOT NULL,               -- 'Month Name -varchar(10)'
-    month_name3            char(3)      NOT NULL,               -- 'Month Name -char(3)'
+        CHECK (day_of_year > 0)         NOT NULL, -- 'Day Number in Year -smallint'
+    week                   smallint     NOT NULL, -- 'Week Number in Year (first day-monday) -tinyint'
+    week_num               smallint     NOT NULL, -- 'Week Number in Year (first day-monday) -tinyint'
+    week_finance           smallint     NOT NULL, -- 'Week Number (finance) -tinyint'
+    week_fullname          char(23)     NOT NULL, -- 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)'
+    year_week              char(7)      NOT NULL, -- 'Year Week YYYY/WW -char(7)'
+    month                  smallint     NOT NULL, -- 'Month Number in Year -tinyint'
+    month2                 char(2)      NOT NULL, -- 'Month Number in Year (0 leads) -char(2)'
+    year_month2            char(7)      NOT NULL, -- 'Year - Month2 YYYY-MM -char(7)'
+    month_name             varchar(10)  NOT NULL, -- 'Month Name -varchar(10)'
+    month_name3            char(3)      NOT NULL, -- 'Month Name -char(3)'
     quarter                smallint
-        CHECK (quarter > 0)             NOT NULL,               -- 'Quarter Number in Year -tinyint'
-    year_quarter           char(6)      NOT NULL,               -- 'Year quarter YYYY Q -char(6)'
-    year                   smallint     NOT NULL,               -- 'Year -smallint'
+        CHECK (quarter > 0)             NOT NULL, -- 'Quarter Number in Year -tinyint'
+    year_quarter           char(6)      NOT NULL, -- 'Year quarter YYYY Q -char(6)'
+    year                   smallint     NOT NULL, -- 'Year -smallint'
     year2                  smallint
-        CHECK (year2 > 0)               NOT NULL,               -- 'Year last 2 figures -tinyint'
-    year2c                 char(2)      NOT NULL,               -- 'Year last 2 chars -char(2)'
+        CHECK (year2 > 0)               NOT NULL, -- 'Year last 2 figures -tinyint'
+    year2c                 char(2)      NOT NULL, -- 'Year last 2 chars -char(2)'
     days_in_year           smallint
-        CHECK (days_in_year > 0)        NOT NULL DEFAULT '365', -- 'Amount days in this year def:365 -smallint'
+        CHECK (days_in_year > 0)        NOT NULL
+        DEFAULT '365',                            -- 'Amount days in this year def:365 -smallint'
 
-    next_date              date         NOT NULL,               -- 'Next Date -date'
-    prev_date              date         NOT NULL,               -- 'Previous Date -date'
+    next_date              date         NOT NULL, -- 'Next Date -date'
+    prev_date              date         NOT NULL, -- 'Previous Date -date'
 
-    day_num_since_2020     int          NOT NULL,               -- 'Day number since 2020-01-01 for order -int'
-    week_num_since_2020    int          NOT NULL,               -- 'Week number since 2020-01-01 for order -int'
-    month_num_since_2020   int          NOT NULL,               -- 'Month number since 2020-01-01 for order -int'
-    quarter_num_since_2020 smallint     NOT NULL,               -- 'Quarter number since 2020-01-01 for order -tinyint'
-    year_num_since_2020    smallint     NOT NULL,               -- 'Year number since 2020-01-01 for order -tinyint'
+    day_num_since_2020     int          NOT NULL, -- 'Day number since 2020-01-01 for order -int'
+    week_num_since_2020    int          NOT NULL, -- 'Week number since 2020-01-01 for order -int'
+    month_num_since_2020   int          NOT NULL, -- 'Month number since 2020-01-01 for order -int'
+    quarter_num_since_2020 smallint     NOT NULL, -- 'Quarter number since 2020-01-01 for order -tinyint'
+    year_num_since_2020    smallint     NOT NULL, -- 'Year number since 2020-01-01 for order -tinyint'
 
-    week_begin             date         NOT NULL,               -- 'Date of begin of this week -date'
-    week_end               date         NOT NULL,               -- 'Date of end of this week -date'
-    month_begin            date         NOT NULL,               -- 'Date of begin of this month -date'
-    month_end              date         NOT NULL,               -- 'Date of end of this month -date'
-    quarter_begin          date         NOT NULL,               -- 'Date of begin of this quarter -date'
-    quarter_end            date         NOT NULL,               -- 'Date of end of this quarter -date'
-    year_begin             date         NOT NULL,               -- 'Date of begin of this year -date'
-    year_end               date         NOT NULL,               -- 'Date of end of this year -date'
+    week_begin             date         NOT NULL, -- 'Date of begin of this week -date'
+    week_end               date         NOT NULL, -- 'Date of end of this week -date'
+    month_begin            date         NOT NULL, -- 'Date of begin of this month -date'
+    month_end              date         NOT NULL, -- 'Date of end of this month -date'
+    quarter_begin          date         NOT NULL, -- 'Date of begin of this quarter -date'
+    quarter_end            date         NOT NULL, -- 'Date of end of this quarter -date'
+    year_begin             date         NOT NULL, -- 'Date of begin of this year -date'
+    year_end               date         NOT NULL, -- 'Date of end of this year -date'
 
-    week_before            date         NOT NULL,               -- 'Same date week before -date'
-    week_after             date         NOT NULL,               -- 'Same date prev week -date'
-    month_before           date         NOT NULL,               -- 'Same date month before -date'
-    month_after            date         NOT NULL,               -- 'Same date prev month -date'
-    quarter_before         date         NOT NULL,               -- 'Same date quarter before -date'
-    quarter_after          date         NOT NULL,               -- 'Same date prev quarter -date'
-    year_before            date         NOT NULL,               -- 'Same date next year -date'
-    year_after             date         NOT NULL,               -- 'Same date prev year -date'
+    week_before            date         NOT NULL, -- 'Same date week before -date'
+    week_after             date         NOT NULL, -- 'Same date prev week -date'
+    month_before           date         NOT NULL, -- 'Same date month before -date'
+    month_after            date         NOT NULL, -- 'Same date prev month -date'
+    quarter_before         date         NOT NULL, -- 'Same date quarter before -date'
+    quarter_after          date         NOT NULL, -- 'Same date prev quarter -date'
+    year_before            date         NOT NULL, -- 'Same date next year -date'
+    year_after             date         NOT NULL, -- 'Same date prev year -date'
 
-    is_working_day         bit          NOT NULL,               -- 'Day is working in Sweden not special -tiny(int)'
-    is_public_holiday      bit          NOT NULL,               -- 'Is public holiday -tiny(int)'
-    special_date           varchar(255) NULL     DEFAULT NULL,  -- 'Special note for date -varchar(255)'
+    is_working_day         bit          NOT NULL, -- 'Day is working in Sweden not special -tiny(int)'
+    is_public_holiday      bit          NOT NULL, -- 'Is public holiday -tiny(int)'
+    special_date           varchar(255) NULL
+        DEFAULT NULL,                             -- 'Special note for date -varchar(255)'
 
-    zodiac                 varchar(50)  NOT NULL,               -- 'Zodiac sign -varchar(50)'
+    zodiac                 varchar(50)  NOT NULL, -- 'Zodiac sign -varchar(50)'
 
     -- row activity fields
     created_at             datetime2(6) NOT NULL
-        CONSTRAINT df_calendar_dates_created DEFAULT (SYSDATETIME()),
-    updated_at             datetime2(6) NULL     DEFAULT NULL,  -- 'Updated -datetime(6)'
+        CONSTRAINT df_calendar_dates_created
+            DEFAULT (SYSDATETIME()),
+    updated_at             datetime2(6) NULL
+        DEFAULT NULL,                             -- 'Updated -datetime(6)'
 
     -- common fields
-    fullname               varchar(255) NOT NULL,               -- 'DD MMMM YYYY (DayName) -varchar(255)'
-    description            varchar(1000)         DEFAULT NULL   -- ', -- ary for the calendar date -varchar(1000)'
+    fullname               varchar(255) NOT NULL, -- 'DD MMMM YYYY (DayName) -varchar(255)'
+    description            varchar(1000)
+        DEFAULT NULL                              -- ', -- ary for the calendar date -varchar(1000)'
 )
 
 CREATE UNIQUE INDEX uniq_index_calendar_date
@@ -165,11 +172,11 @@ DECLARE
     SET @special = NULL;
     SET @is_public_holiday = NULL;
     SET @day_of_period = 1;
-    SET @number_of_calendar_week = 1;
 
     SET @day_cursor = '2019.12.31';
     SET @quarter = 4;
     SET @quarter_was = 4;
+    SET @number_of_calendar_week = 53;
     SET @day_cursor_end = '2036.12.31';
 
     SET @begin_of_period = @day_cursor;
@@ -282,6 +289,7 @@ DECLARE
                                         week,
                                         week_num,
                                         week_finance,
+                                        year_week,
                                         month,
                                         month2,
                                         month_name,
@@ -359,6 +367,7 @@ DECLARE
                 @number_of_calendar_week,
                 DATENAME(WEEK, CAST(@day_cursor AS date)),
                 DATENAME(ISO_WEEK, CAST(@day_cursor AS date)),
+                CONCAT(YEAR(@day_cursor), '/', RIGHT(CONCAT('0', @number_of_calendar_week), 2)),
                 MONTH(CAST(@day_cursor AS date)),
                 FORMAT(CAST(@day_cursor AS date), 'MM'),
                 DATENAME(MONTH, CAST(@day_cursor AS date)),

@@ -22,8 +22,10 @@ WITH cte_dates_of_weeks AS (SELECT year,
                             FROM calendar_dates
                             GROUP BY year,
                                      week)
-SELECT sunday.year,
+SELECT  sunday.year_week,
+       sunday.year,
        sunday.week,
+       RIGHT(CONCAT('0', sunday.week), 2)                                      AS week2c,
        sunday.week_begin,
        sunday.week_end,
        MONTH(DATE_ADD(sunday.date, INTERVAL -7 DAY))                           AS month_begin,
@@ -71,11 +73,6 @@ ORDER BY order_week_number_descent
 SELECT *
 FROM calendar_weeks
 WHERE year = 2023;
-
-SELECT *
-FROM calendar_dates
-WHERE year = 2024
-  AND week = 1;
 
 /*
  sza(c)

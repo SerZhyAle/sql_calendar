@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS calendar_dates_swap;
 CREATE TABLE calendar_dates_swap
 (
     #original uniq combination
-    date                   date              NOT NULL PRIMARY KEY COMMENT 'YYYY.MM.DD -date',
+    date                   date              NOT NULL PRIMARY KEY COMMENT 'YYYY-MM-DD -date',
     date8                  int UNSIGNED      NOT NULL COMMENT 'YYYYMMDD -int',
     date_ymd               char(10)          NOT NULL COMMENT 'YYYY-MM-DD -char(10)',
     date_dmy               char(10)          NOT NULL COMMENT 'DD.MM.YYYY -char(10)',
@@ -55,6 +55,7 @@ CREATE TABLE calendar_dates_swap
     week_num               tinyint           NOT NULL COMMENT 'Week Number in Year (first day-monday) -tinyint',
     week_finance           tinyint           NOT NULL COMMENT 'Week Number (finance) -tinyint',
     week_fullname          char(23)          NOT NULL COMMENT 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)',
+    year_week              char(7)           NOT NULL COMMENT 'Year week YYYY/WW -char(7)',
     month                  tinyint           NOT NULL COMMENT 'Month Number in Year -tinyint',
     month2                 char(2)           NOT NULL COMMENT 'Month Number in Year (0 leads) -char(2)',
     year_month2            char(7)           NOT NULL COMMENT 'Year - Month2 YYYY-MM -char(7)',
@@ -145,11 +146,12 @@ BEGIN
 
     SET @special = NULL;
     SET @is_public_holiday = NULL;
-    SET @day_of_period = 1, @number_of_calendar_week = 1;
+    SET @day_of_period = 1;
 
     SET @day_cursor = '2019.12.31';
-    SET @quarter = 4;
-    SET @quarter_was = 4;
+    SET @quarter = 4; -- for '2019.12.31'
+    SET @quarter_was = 4; -- for '2019.12.31'
+    SET @number_of_calendar_week = 53; -- for '2019.12.31'
     SET @day_cursor_end = '2036.12.31';
 
     SET @begin_of_period = @day_cursor;
@@ -337,6 +339,7 @@ BEGIN
                                             week,
                                             week_num,
                                             week_finance,
+                                            year_week,
                                             month,
                                             month2,
                                             month_name,
@@ -408,6 +411,7 @@ BEGIN
                     @number_of_calendar_week,
                     WEEK(@day_cursor, 1),
                     DATE_FORMAT(@day_cursor, '%v'),
+                    CONCAT(EXTRACT(YEAR FROM @day_cursor), '/', RIGHT(CONCAT('0', @number_of_calendar_week), 2)),
                     @month_cursor,
                     DATE_FORMAT(@day_cursor, '%m'),
                     DATE_FORMAT(@day_cursor, '%M'),
@@ -532,8 +536,8 @@ FROM calendar_dates;
 
 SELECT *
 FROM calendar_dates
-WHERE date IN (CURRENT_DATE, '2023.12.01', '2024.01.01', '2023-02-25', '2022-12-31', '2023-03-31')
-ORDER BY date;
+WHERE DATE IN (CURRENT_DATE, '2023.12.01', '2024.01.01', '2023-02-25', '2022-12-31', '2023-03-31')
+ORDER BY DATE;
 /*
 result:
 

@@ -11,8 +11,10 @@
 
 CREATE OR ALTER VIEW calendar_weeks AS
 (
-SELECT sunday.year,
+SELECT sunday.year_week,
+       sunday.year,
        sunday.week,
+       RIGHT(CONCAT('0', sunday.week), 2)                              AS week2c,
        sunday.week_begin,
        sunday.week_end,
        MONTH(DATEADD(DAY, -7, sunday.date))                            AS month_begin,
@@ -66,11 +68,6 @@ ORDER BY order_week_number_descent;
 SELECT *
 FROM calendar_weeks
 WHERE year = 2023;
-
-SELECT *
-FROM calendar_dates
-WHERE year = 2024
-  AND week = 1;
 
 /*
  sza(c)
