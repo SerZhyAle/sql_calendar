@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>92a2a2ad-b139-48e9-aac8-f9fc9e7625e4.TABLE:sandbox.dbo.calendar_dates</OriginalElement>
+  <nodes>
+    <node x="-91.0" y="-801.5">92a2a2ad-b139-48e9-aac8-f9fc9e7625e4.TABLE:sandbox.dbo.calendar_dates</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Directed (Bottom to Top)" zoom="0.5055418719211823" showDependencies="false" x="0.0" y="0.0" />
+  <SelectedNodes>
+    <node>92a2a2ad-b139-48e9-aac8-f9fc9e7625e4.TABLE:sandbox.dbo.calendar_dates</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

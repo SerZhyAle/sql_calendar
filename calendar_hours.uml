@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>ab782a80-6581-429b-9953-6e458ed0800e.TABLE:gear.calendar_hours</OriginalElement>
+  <nodes>
+    <node x="-87.0" y="-438.5">ab782a80-6581-429b-9953-6e458ed0800e.TABLE:gear.calendar_hours</node>
+  </nodes>
+  <notes />
+  <edges />
+  <settings layout="Directed (Bottom to Top)" zoom="0.8797327394209354" showDependencies="false" x="0.0" y="0.0" />
+  <SelectedNodes>
+    <node>ab782a80-6581-429b-9953-6e458ed0800e.TABLE:gear.calendar_hours</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+
