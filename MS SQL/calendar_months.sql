@@ -1,5 +1,5 @@
 /*
--- next code for MySQL 5.7:
+-- next code for Microsoft SQL:
 
  calendar_months is a VIEW based on tables:
  -- calendar_dates
@@ -10,7 +10,7 @@
  the working_hours is 8 per working_day
  */
 
-CREATE OR REPLACE VIEW calendar_months AS
+CREATE OR ALTER VIEW calendar_months AS
 (
 SELECT last_day_of_month.year_month2,
        last_day_of_month.year_quarter,
@@ -22,14 +22,14 @@ SELECT last_day_of_month.year_month2,
        last_day_of_month.month_name3,
        last_day_of_month.month_begin,
        last_day_of_month.month_end,
-       DATEDIFF(first_day_of_month.month_end,
-                last_day_of_month.month_begin) + 1                         AS days_in_month,
-       (DATEDIFF(first_day_of_month.month_end,
-                 last_day_of_month.month_begin) + 1) * 24                  AS hours_in_month,
-       first_day_of_month.date - INTERVAL 1 DAY                            AS prev_month_last_day,
-       LEFT(first_day_of_month.date - INTERVAL 1 DAY, 7)                   AS prev_year_month2,
-       IF(last_day_of_month.month IN (3, 6, 9, 12), 1, 0)                  AS is_last_in_quarter,
-       IF(last_day_of_month.month = 12, 1, 0)                              AS is_last_in_year,
+       DATEDIFF(DAY, last_day_of_month.month_begin,
+                first_day_of_month.month_end) + 1                          AS days_in_month,
+       (DATEDIFF(DAY, last_day_of_month.month_begin,
+                 first_day_of_month.month_end) + 1) * 24                   AS hours_in_month,
+       DATEADD(DAY, -1, first_day_of_month.date)                           AS prev_month_last_day,
+       LEFT(DATEADD(DAY, -1, first_day_of_month.date), 7)                  AS prev_year_month2,
+       IIF(last_day_of_month.month IN (3, 6, 9, 12), 1, 0)                 AS is_last_in_quarter,
+       IIF(last_day_of_month.month = 12, 1, 0)                             AS is_last_in_year,
        dates_of_month.weekdays,
        dates_of_month.weekends,
        dates_of_month.special_days,
@@ -49,11 +49,11 @@ FROM calendar_dates AS last_day_of_month
     JOIN calendar_dates AS first_day_of_month
         ON first_day_of_month.date = last_day_of_month.month_begin
     JOIN (SELECT year_month2,
-                 SUM(is_weekday)                         AS weekdays,
-                 SUM(is_weekend)                         AS weekends,
-                 SUM(IF(special_date IS NOT NULL, 1, 0)) AS special_days,
-                 SUM(IF(is_working_day, 1, 0))           AS working_days,
-                 SUM(IF(is_working_day, 8, 0))           AS working_hours
+                 SUM(IIF(is_weekday = 1, 1, 0))           AS weekdays,
+                 SUM(IIF(is_weekend = 1, 1, 0))           AS weekends,
+                 SUM(IIF(special_date IS NOT NULL, 1, 0)) AS special_days,
+                 SUM(IIF(is_working_day = 1, 1, 0))       AS working_days,
+                 SUM(IIF(is_working_day = 1, 8, 0))       AS working_hours
           FROM calendar_dates
           GROUP BY year_month2) AS dates_of_month
         ON dates_of_month.year_month2 = last_day_of_month.year_month2
@@ -62,11 +62,11 @@ FROM calendar_dates AS last_day_of_month
                  MIN(hours.date_hour) AS min_date_hour
           FROM calendar_hours AS hours
               JOIN (SELECT year_month2,
-                           SUM(is_weekday)                         AS weekdays,
-                           SUM(is_weekend)                         AS weekends,
-                           SUM(IF(special_date IS NOT NULL, 1, 0)) AS special_days,
-                           SUM(IF(is_working_day, 1, 0))           AS working_days,
-                           SUM(IF(is_working_day, 8, 0))           AS working_hours
+                           SUM(IIF(is_weekday = 1, 1, 0))           AS weekdays,
+                           SUM(IIF(is_weekend = 1, 1, 0))           AS weekends,
+                           SUM(IIF(special_date IS NOT NULL, 1, 0)) AS special_days,
+                           SUM(IIF(is_working_day = 1, 1, 0))       AS working_days,
+                           SUM(IIF(is_working_day = 1, 8, 0))       AS working_hours
                     FROM calendar_dates
                     GROUP BY year_month2) AS dates
                   ON dates.year_month2 = hours.year_month2
@@ -77,20 +77,20 @@ FROM calendar_dates AS last_day_of_month
                  MIN(hours.date_hour) AS min_date_hour_utc_to_cet
           FROM calendar_hours AS hours
               JOIN (SELECT year_month2,
-                           SUM(is_weekday)                         AS weekdays,
-                           SUM(is_weekend)                         AS weekends,
-                           SUM(IF(special_date IS NOT NULL, 1, 0)) AS special_days,
-                           SUM(IF(is_working_day, 1, 0))           AS working_days,
-                           SUM(IF(is_working_day, 8, 0))           AS working_hours
+                           SUM(IIF(is_weekday = 1, 1, 0))           AS weekdays,
+                           SUM(IIF(is_weekend = 1, 1, 0))           AS weekends,
+                           SUM(IIF(special_date IS NOT NULL, 1, 0)) AS special_days,
+                           SUM(IIF(is_working_day = 1, 1, 0))       AS working_days,
+                           SUM(IIF(is_working_day = 1, 8, 0))       AS working_hours
                     FROM calendar_dates
                     GROUP BY year_month2) AS dates
                   ON dates.year_month2 = hours.year_month2_cet
           GROUP BY hours.year_month2_cet) AS first_and_last_hours_cet
         ON first_and_last_hours_cet.year_month2_cet = last_day_of_month.year_month2
 WHERE last_day_of_month.is_last_day_of_month = 1
-    );
+    )
 
-#check..
+-- check..
 SELECT *
 FROM calendar_months;
 

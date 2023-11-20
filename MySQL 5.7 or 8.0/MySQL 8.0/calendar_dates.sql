@@ -37,7 +37,7 @@ CREATE TABLE calendar_dates_swap
     date_dmmmy             char(11)          NOT NULL COMMENT 'DD MMM YYYY -char(11)',
     date_dmmmmy            varchar(25)       NOT NULL COMMENT 'DD Month YYYY -varchar(25)',
     day_of_week            smallint UNSIGNED NOT NULL COMMENT 'Day Number in Week 0=sunday -smallint',
-    day_of_week_char       varchar(5)       NOT NULL COMMENT 'Name of Number of Day in Week -varchar(5)',
+    day_of_week_char       varchar(5)        NOT NULL COMMENT 'Name of Number of Day in Week -varchar(5)',
     is_weekday             boolean           NOT NULL COMMENT 'True if NOT Saturday and NOT Sunday -boolean',
     is_weekend             boolean           NOT NULL COMMENT 'True if Saturday or Sunday -boolean',
     is_last_day_of_week    boolean           NOT NULL COMMENT 'True if Sunday -boolean',
@@ -61,6 +61,7 @@ CREATE TABLE calendar_dates_swap
     month_name             varchar(10)       NOT NULL COMMENT 'Month Name -varchar(10)',
     month_name3            char(3)           NOT NULL COMMENT 'Month Name -char(3)',
     quarter                tinyint UNSIGNED  NOT NULL COMMENT 'Quarter Number in Year -tinyint',
+    year_quarter char(6) NOT NULL  comment 'Year quarter YYYY Q -char(6)',
     year                   smallint          NOT NULL COMMENT 'Year -smallint',
     year2                  tinyint UNSIGNED  NOT NULL COMMENT 'Year last 2 figures -tinyint',
     year2c                 char(2)           NOT NULL COMMENT 'Year last 2 chars -char(2)',
@@ -119,6 +120,8 @@ CREATE INDEX index_calendar_week_num_since_2020
 CREATE INDEX index_calendar_year_month2
     ON calendar_dates_swap (year_month2);
 
+CREATE INDEX index_calendar_year_quarter
+    ON calendar_dates_swap (year_quarter);
 /*
  -- _________________________________________________________________ --
  STEP 2.
@@ -142,9 +145,11 @@ BEGIN
 
     SET @special = NULL;
     SET @is_public_holiday = NULL;
-    SET @day_of_period = 1, @period_now = 1, @period_was = 1, @number_of_calendar_week = 1;
+    SET @day_of_period = 1, @number_of_calendar_week = 1;
 
     SET @day_cursor = '2019.12.31';
+    SET @quarter = 4;
+    SET @quarter_was = 4;
     SET @day_cursor_end = '2036.12.31';
 
     SET @begin_of_period = @day_cursor;
@@ -261,7 +266,7 @@ BEGIN
                 SET @special = NULL;
             END IF;
 
-            SET @is_weekend = (CASE WHEN @week_day_number IN (6, 0) THEN 1 ELSE 0 END);
+            SET @is_weekend = (IF(@week_day_number IN (6, 0), 1, 0));
 
             IF (@is_public_holiday + @is_weekend) = 0
             THEN
@@ -273,7 +278,7 @@ BEGIN
             IF MONTH(@day_cursor) IN (4, 7, 10, 1)
                 AND DAY(@day_cursor) = 1 THEN
 
-                SET @period_now = @period_now + 1,
+                SET @quarter = @quarter + 1,
                     @begin_of_period = @day_cursor,
                     @end_of_period = LAST_DAY(DATE_ADD(@begin_of_period, INTERVAL 3 MONTH));
             END IF;
@@ -281,13 +286,13 @@ BEGIN
             IF MONTH(@day_cursor) = 1
                 AND DAY(@day_cursor) = 1 THEN
 
-                SET @period_now = 1,
+                SET @quarter = 1,
                     @year_num_since_2020 = @year_num_since_2020 + 1;
             END IF;
 
-            IF @period_now <> @period_was THEN
+            IF @quarter <> @quarter_was THEN
                 SET @day_of_period = 1,
-                    @period_was = @period_now,
+                    @quarter_was = @quarter,
                     @quarter_num_since_2020 = @quarter_num_since_2020 + 1;
             END IF;
 
@@ -305,6 +310,9 @@ BEGIN
             IF @week_day_number = 1 THEN
                 SET @week_num_since_2020 = @week_num_since_2020 + 1;
             END IF;
+
+            SET @day_of_cursor = EXTRACT(DAY FROM @day_cursor);
+            SET @month_of_cursor = EXTRACT(MONTH FROM @day_cursor);
 
             INSERT INTO calendar_dates_swap(date,
                                             date8,
@@ -333,6 +341,7 @@ BEGIN
                                             month_name,
                                             month_name3,
                                             quarter,
+                                            year_quarter,
                                             year,
                                             year2,
                                             year2c,
@@ -386,11 +395,11 @@ BEGIN
                                                        WHEN (@week_day_number + 1) = 1 THEN 'st'
                                                        WHEN (@week_day_number + 1) = 2 THEN 'nd'
                                                        ELSE 'rd' END),
-                    (CASE WHEN @week_day_number IN (6, 0) THEN FALSE ELSE TRUE END),
+                    IF(@week_day_number IN (6, 0), FALSE, TRUE),
                     @is_weekend,
                     DATE_FORMAT(@day_cursor, '%W'),
                     DATE_FORMAT(@day_cursor, '%a'),
-                    EXTRACT(DAY FROM @day_cursor),
+                    @day_of_cursor,
                     DATE_FORMAT(@day_cursor, '%d'),
                     DATE_FORMAT(@day_cursor, '%D'),
                     @day_of_period,
@@ -398,108 +407,62 @@ BEGIN
                     @number_of_calendar_week,
                     WEEK(@day_cursor, 1),
                     DATE_FORMAT(@day_cursor, '%v'),
-                    EXTRACT(MONTH FROM @day_cursor),
+                    @month_of_cursor,
                     DATE_FORMAT(@day_cursor, '%m'),
                     DATE_FORMAT(@day_cursor, '%M'),
                     DATE_FORMAT(@day_cursor, '%b'),
-                    @period_now,
+                    @quarter,
+                    concat(EXTRACT(YEAR FROM @day_cursor), ' ', @quarter),
                     EXTRACT(YEAR FROM @day_cursor),
                     DATE_FORMAT(@day_cursor, '%y'),
                     DATE_FORMAT(@day_cursor, '%y'),
                     @days_in_the_year,
                     CASE
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 21 AND EXTRACT(MONTH FROM @day_cursor) = 3
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 19 AND EXTRACT(MONTH FROM @day_cursor) = 4)
+                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 3
+                            OR @day_of_cursor <= 19 AND @month_of_cursor = 4)
                             THEN '03 Aries'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 20 AND EXTRACT(MONTH FROM @day_cursor) = 4
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 20 AND EXTRACT(MONTH FROM @day_cursor) = 5)
+                        WHEN (@day_of_cursor >= 20 AND @month_of_cursor = 4
+                            OR @day_of_cursor <= 20 AND @month_of_cursor = 5)
                             THEN '04 Taurus'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 21 AND EXTRACT(MONTH FROM @day_cursor) = 5
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 20 AND EXTRACT(MONTH FROM @day_cursor) = 6)
+                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 5
+                            OR @day_of_cursor <= 20 AND @month_of_cursor = 6)
                             THEN '05 Gemini'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 21 AND EXTRACT(MONTH FROM @day_cursor) = 6
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 22 AND EXTRACT(MONTH FROM @day_cursor) = 7)
+                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 6
+                            OR @day_of_cursor <= 22 AND @month_of_cursor = 7)
                             THEN '06 Cancer'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 23 AND EXTRACT(MONTH FROM @day_cursor) = 7
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 22 AND EXTRACT(MONTH FROM @day_cursor) = 8)
+                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 7
+                            OR @day_of_cursor <= 22 AND @month_of_cursor = 8)
                             THEN '07 Leo'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 23 AND EXTRACT(MONTH FROM @day_cursor) = 8
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 22 AND EXTRACT(MONTH FROM @day_cursor) = 9)
+                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 8
+                            OR @day_of_cursor <= 22 AND @month_of_cursor = 9)
                             THEN '08 Virgo'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 23 AND EXTRACT(MONTH FROM @day_cursor) = 9
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 22 AND EXTRACT(MONTH FROM @day_cursor) = 10)
+                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 9
+                            OR @day_of_cursor <= 22 AND @month_of_cursor = 10)
                             THEN '09 Libra'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 23 AND EXTRACT(MONTH FROM @day_cursor) = 10
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 21 AND EXTRACT(MONTH FROM @day_cursor) = 11)
+                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 10
+                            OR @day_of_cursor <= 21 AND @month_of_cursor = 11)
                             THEN '10 Scorpio'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 22 AND EXTRACT(MONTH FROM @day_cursor) = 11
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 21 AND EXTRACT(MONTH FROM @day_cursor) = 12)
+                        WHEN (@day_of_cursor >= 22 AND @month_of_cursor = 11
+                            OR @day_of_cursor <= 21 AND @month_of_cursor = 12)
                             THEN '11 Sagittarius'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 22 AND EXTRACT(MONTH FROM @day_cursor) = 12
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 20 AND EXTRACT(MONTH FROM @day_cursor) = 1)
+                        WHEN (@day_of_cursor >= 22 AND @month_of_cursor = 12
+                            OR @day_of_cursor <= 20 AND @month_of_cursor = 1)
                             THEN '12 Capricorn'
-                        WHEN
-                            (EXTRACT(DAY FROM @day_cursor) >= 21 AND EXTRACT(MONTH FROM @day_cursor) = 1
-                                OR
-                             EXTRACT(DAY FROM @day_cursor) <= 18 AND EXTRACT(MONTH FROM @day_cursor) = 2)
+                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 1
+                            OR @day_of_cursor <= 18 AND @month_of_cursor = 2)
                             THEN '01 Aquarius'
-                        ELSE
-                            '02 Pisces'
+                        ELSE '02 Pisces'
                         END,
                     @is_public_holiday,
                     DATE_FORMAT(@day_cursor, '%D %M %Y (%W)'),
-                    CASE
-                        WHEN
-                            @week_day_number = 0
-                            THEN 1
-                        ELSE 0
-                        END,
-                    CASE
-                        WHEN
-                            EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
-                            THEN 1
-                        ELSE 0
-                        END,
-                    CASE
-                        WHEN
-                                    EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) IN (1, 4, 7, 10)
-                                AND
-                                    EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
-                            THEN 1
-                        ELSE 0
-                        END,
-                    CASE
-                        WHEN
-                                    EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
-                                AND
-                                    EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
-                            THEN 1
-                        ELSE 0
-                        END,
-                    DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1)
-                             DAY),
-                    DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number)
-                             DAY),
+                    IF(@week_day_number = 0, 1, 0),
+                    IF(EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                    IF(EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) IN (1, 4, 7, 10)
+                           AND EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                    IF(EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
+                           AND EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                    DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1) DAY),
+                    DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number) DAY),
                     DATE_FORMAT(@day_cursor, '%Y-%m-01'),
                     LAST_DAY(@day_cursor),
                     @begin_of_period,
@@ -525,17 +488,15 @@ BEGIN
                     DATE_ADD(@day_cursor, INTERVAL 1 DAY),
                     DATE_ADD(@day_cursor, INTERVAL -1 DAY),
                     DATE_FORMAT(@day_cursor, '%m-%d'),
-                    CONCAT(DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1)
-                                    DAY),
-                           ' - ',
-                           DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number)
-                                    DAY)));
+                    CONCAT(DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1) DAY), ' - ',
+                           DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number) DAY)));
 
             SET @day_cursor = DATE_ADD(@day_cursor, INTERVAL 1 DAY);
             SET @day_of_period = @day_of_period + 1;
             SET @day_num_since_2020 = @day_num_since_2020 + 1;
 
         END WHILE;
+
     START TRANSACTION ;
     DROP TABLE IF EXISTS calendar_dates;
     RENAME TABLE calendar_dates_swap TO calendar_dates;

@@ -1,19 +1,20 @@
 # sql_calendar
 
-Physical Calendar for MySQL and MS SQL (hours, dates, weeks, months, years)
+Physical Calendar for MySQL and MS SQL (hours, dates, weeks, months, quarters, years)
 
-In package:
+In this package code for:
 
 The tables:
--- calendar_dates
--- calendar_hours
+- **calendar_dates**
+- **calendar_hours**
 
 The views:
--- calendar_weeks
--- calendar_months
--- calendar_years
+- **calendar_weeks**
+- **calendar_months**
+- **calendar_quarters**
+- **calendar_years**
 
- - calendar_dates (68 columns)
+ **calendar_dates** (68 columns)
  The table pointing each date in period.
 
  The idea to have the real table with already calculated information and use it in joining for any daily aggregations.
@@ -21,7 +22,7 @@ The views:
  Columns week_begin, year_month2, year - pointing its views.
  
  
- - calendar_hours (38 columns)
+ **calendar_hours** (38 columns)
  The table pointing each hour for every date in period.
  
  The idea to have the real table with already calculated information to use it in joining for any hourly aggregations.
@@ -36,16 +37,21 @@ The views:
  Also presented 3 short-versions of this table for fast indexing for big data selections.
  
 
- - calendar_weeks (28 columns)
+ **calendar_weeks** (28 columns)
  The view to aggregate daily-presented data by its weeks. 
 
 
- - calendar_months (29 columns)
+ **calendar_months** (29 columns)
  The view to aggregate daily-presented data by its calendar months. 
 
+ **calendar_quarters** (16 columns)
+ The view to aggregate daily/monthly-presented data by its calendar quartals. 
 
- - calendar_years (16 columns)
+ **calendar_years** (16 columns)
  The view to aggregate daily/monthly-presented data by its calendar year.
+
+
+Please choose your SQL version and pay attention to the details written in comments in the code files (.sql)
   
 /*
  sza(c)

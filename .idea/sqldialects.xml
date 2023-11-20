@@ -3,6 +3,11 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/MS SQL/calendar_dates.sql" dialect="TSQL" />
     <file url="file://$PROJECT_DIR$/MS SQL/calendar_hours.sql" dialect="TSQL" />
+    <file url="file://$PROJECT_DIR$/MS SQL/calendar_months.sql" dialect="TSQL" />
+    <file url="file://$PROJECT_DIR$/MS SQL/calendar_quarters.sql" dialect="TSQL" />
     <file url="file://$PROJECT_DIR$/MS SQL/calendar_weeks.sql" dialect="TSQL" />
+    <file url="file://$PROJECT_DIR$/MS SQL/calendar_years.sql" dialect="TSQL" />
+    <file url="file://$PROJECT_DIR$/MS SQL/sweden_salary_days.sql" dialect="TSQL" />
+    <file url="file://$PROJECT_DIR$/MySQL 5.7 or 8.0/MySQL 5.7/calendar_quarters_57.sql" dialect="MySQL" />
   </component>
 </project>

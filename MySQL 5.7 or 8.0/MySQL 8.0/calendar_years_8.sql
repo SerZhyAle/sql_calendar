@@ -1,5 +1,5 @@
 /*
--- next code for MYSQL 8.0 and higher:
+-- next code for MySQL 8.0 and higher:
 
  calendar_weeks is a VIEW based on table:
  -- calendar_dates
@@ -12,16 +12,10 @@
 CREATE OR REPLACE VIEW calendar_years AS
 (
 WITH cte_dates_of_year AS (SELECT year,
-                                  SUM(is_weekday)     AS weekdays,
-                                  SUM(is_weekend)     AS weekends,
-                                  SUM(CASE
-                                          WHEN special_date IS NOT NULL
-                                              THEN 1
-                                          ELSE 0 END) AS special_days,
-                                  SUM(CASE
-                                          WHEN is_working_day
-                                              THEN 1
-                                          ELSE 0 END) AS working_days
+                                  SUM(is_weekday)                         AS weekdays,
+                                  SUM(is_weekend)                         AS weekends,
+                                  SUM(IF(special_date IS NOT NULL, 1, 0)) AS special_days,
+                                  SUM(IF(is_working_day, 1, 0))           AS working_days
                            FROM calendar_dates
                            GROUP BY year)
 
@@ -39,10 +33,7 @@ SELECT last_day_of_year.year,
        dates_of_year.weekends,
        dates_of_year.special_days,
        dates_of_year.working_days,
-       CASE
-           WHEN last_day_of_year.days_in_year = 365
-               THEN 0
-           ELSE 1 END                                      AS is_leap_year,
+       IF(last_day_of_year.days_in_year = 365, 0, 1)       AS is_leap_year,
        last_day_of_year.year_num_since_2020                AS order_year_number
 
 FROM calendar_dates AS last_day_of_year

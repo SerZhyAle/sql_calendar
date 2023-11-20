@@ -162,12 +162,7 @@ BEGIN
             WHERE date = @day_cursor
             INTO @is_public_holiday;
 
-            SELECT CASE
-                       WHEN is_weekend
-                                + is_public_holiday = 0
-                           THEN 1
-                       ELSE 0
-                       END AS is_working_day
+            SELECT IF(is_weekend = 0 AND is_public_holiday = 0, 1, 0) AS is_working_day
             FROM calendar_dates
             WHERE date = @day_cursor
             INTO @is_working_day;
@@ -241,60 +236,20 @@ BEGIN
                             SUBSTR(@cet, 12, 2),
                             @special, CONCAT(@calculated_date_hour, ' UTC'),
                             CONCAT(DATE_FORMAT(@day_cursor, '%d.'), @hour2),
-                            CASE
-                                WHEN @last_day_of_week = 1 AND @hour_cursor = 23
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @last_day_of_month = 1 AND @hour_cursor = 23
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @last_day_of_period = 1 AND @hour_cursor = 23
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @last_day_of_year = 1 AND @hour_cursor = 23
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @hour_cursor > 22 OR @hour_cursor < 6
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @hour_cursor = 12 OR @hour_cursor = 13
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN ((@hour_cursor > 7 AND @hour_cursor < 12)
-                                    OR (@hour_cursor > 13 AND @hour_cursor < 19))
-                                    AND @is_working_day = 1
-                                    THEN 1
-                                ELSE 0
-                                END,
+                            IF(@last_day_of_week = 1 AND @hour_cursor = 23, 1, 0),
+                            IF(@last_day_of_month = 1 AND @hour_cursor = 23, 1, 0),
+                            IF(@last_day_of_period = 1 AND @hour_cursor = 23, 1, 0),
+                            IF(@last_day_of_year = 1 AND @hour_cursor = 23, 1, 0),
+                            IF(@hour_cursor > 22 OR @hour_cursor < 6, 1, 0),
+                            IF(@hour_cursor = 12 OR @hour_cursor = 13, 1, 0),
+                            IF(((@hour_cursor > 7 AND @hour_cursor < 12)
+                                OR (@hour_cursor > 13 AND @hour_cursor < 19))
+                                   AND @is_working_day = 1, 1, 0),
                             @is_working_day,
                             @is_public_holiday,
-                            CASE
-                                WHEN @hour_cursor BETWEEN 6 AND 9
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @hour_cursor BETWEEN 10 AND 18
-                                    THEN 1
-                                ELSE 0
-                                END,
-                            CASE
-                                WHEN @hour_cursor BETWEEN 19 AND 22
-                                    THEN 1
-                                ELSE 0
-                                END,
+                            IF(@hour_cursor BETWEEN 6 AND 9, 1, 0),
+                            IF(@hour_cursor BETWEEN 10 AND 18, 1, 0),
+                            IF(@hour_cursor BETWEEN 19 AND 22, 1, 0),
                             RIGHT(@calculated_date_hour, 11),
                             RIGHT(CONCAT(DATE_FORMAT(@day_cursor, '%Y%m%d'), @hour2), 8),
                             RIGHT(@day_cursor, 8),

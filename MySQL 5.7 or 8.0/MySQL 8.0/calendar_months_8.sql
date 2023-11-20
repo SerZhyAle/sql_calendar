@@ -1,5 +1,5 @@
 /*
--- next code for MYSQL 8.0 and higher:
+-- next code for MySQL 8.0 and higher:
 
  calendar_months is a VIEW based on tables:
  -- calendar_dates
@@ -36,8 +36,8 @@ WITH cte_dates_of_month           AS (SELECT year_month2,
                                               ON dates.year_month2 = hours.year_month2_cet
                                       GROUP BY hours.year_month2_cet)
 
-
-SELECT last_day_of_month.year_month2                                       AS year_month2,
+SELECT last_day_of_month.year_month2,
+       last_day_of_month.year_quarter,
        last_day_of_month.year,
        last_day_of_month.month,
        last_day_of_month.quarter,

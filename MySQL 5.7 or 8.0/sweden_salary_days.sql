@@ -10,35 +10,15 @@ DROP TEMPORARY TABLE IF EXISTS temp_se_salary_days;
 CREATE TEMPORARY TABLE temp_se_salary_days
 SELECT CONCAT(calendar_month.year, '-',
               date_25.month2, '-',
-              CASE
-                  WHEN date_25.is_weekend
-                      OR date_25.is_public_holiday
-                      THEN
-                      CASE
-                          WHEN date_24.is_weekend
-                              OR date_24.is_public_holiday
-                              THEN
-                              CASE
-                                  WHEN date_23.is_weekend
-                                      OR date_23.is_public_holiday
-                                      THEN
-                                      CASE
-                                          WHEN date_22.is_weekend
-                                              OR date_22.is_public_holiday
-                                              THEN
-                                              '21'
-                                          ELSE
-                                              '22'
-                                          END
-                                  ELSE
-                                      '23'
-                                  END
-                          ELSE
-                              '24'
-                          END
-                  ELSE
-                      '25'
-                  END) AS date_to_update
+              IF(date_25.is_weekend
+                     OR date_25.is_public_holiday,
+                 IF(date_24.is_weekend
+                        OR date_24.is_public_holiday,
+                    IF(date_23.is_weekend
+                           OR date_23.is_public_holiday,
+                       IF(date_22.is_weekend
+                              OR date_22.is_public_holiday, '21', '22'),
+                       '23'), '24'), '25')) AS date_to_update
 FROM calendar_months AS calendar_month
     JOIN calendar_dates AS date_25
         ON calendar_month.year = date_25.year
