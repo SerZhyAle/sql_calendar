@@ -2,6 +2,7 @@
 
 ## Physical **Calendar** for *MySQL* and *Microsoft SQL* (hours, dates, weeks, months, quarters, years)
 
+The solution for enterprise applications. Calendar with already calculated fields for grouping and filtering date-time aggregated stored data.  
 In this package code for:
 
 The tables:
@@ -19,7 +20,7 @@ The views:
  ## **calendar_dates** (68 columns)  
  The table points to each date in the period.
  Main fields can be key to dimensions in aggregated tables: *date* (date YYYY-MM-DD) and *date8* (int YYYYMMDD).  
- But all known other versions presented. 
+ But all known other versions are presented. 
 
  The idea is to have a real table with already calculated information and use it in joining any daily aggregations. 
  Columns **year_week** or **week_begin**, **year_month2**, **year_quarter**, **year** - pointing its views. 
@@ -42,22 +43,22 @@ The views:
 ---
  ## **calendar_weeks** (28 columns)  
  The view to aggregate daily-presented data by its weeks.
- Main field can be key to dimensions in aggregated tables: *year_week* (char(7) YYYY/WW)
+ The main field can be key to dimensions in aggregated tables: *year_week* (char(7) YYYY/WW)
 
 ---
  ## **calendar_months** (29 columns)  
  The view to aggregate daily-presented data by its calendar months.
- Main field can be key to dimensions in aggregated tables: *year_month2* (char(7) YYYY-MM)
+ The main field can be key to dimensions in aggregated tables: *year_month2* (char(7) YYYY-MM)
 
 ---
  ## **calendar_quarters** (16 columns)  
  The view to aggregate daily/monthly-presented data by its calendar quarters.
- Main field can be key to dimensions in aggregated tables: *year_quarter* (char(6) YYYY-Q)
+ The main field can be key to dimensions in aggregated tables: *year_quarter* (char(6) YYYY-Q)
 
 ---
  ## **calendar_years** (16 columns)  
  The view to aggregate daily/monthly-presented data by its calendar year.
- Main field can be key to dimensions in aggregated tables: *year* (YYYY)
+ The main field can be key to dimensions in aggregated tables: *year* (YYYY)
 
 ---
 Please choose your SQL version and pay attention to the details written in comments in the code files (.sql)
