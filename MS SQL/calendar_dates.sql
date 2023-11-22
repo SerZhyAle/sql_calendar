@@ -21,8 +21,9 @@
   run one by one..
  */
 -- ALTER TABLE [calendar_dates_swap] DROP CONSTRAINT if EXISTS [DF_calendar_dates_created];
--- ALTER TABLE [calendar_dates] DROP CONSTRAINT if EXISTS [DF_calendar_dates_created];
--- DROP TABLE IF EXISTS calendar_dates_swap
+ALTER TABLE calendar_dates
+    DROP CONSTRAINT IF EXISTS df_calendar_dates_created;
+DROP TABLE IF EXISTS calendar_dates_swap
 
 CREATE TABLE calendar_dates_swap
 (
@@ -59,7 +60,7 @@ CREATE TABLE calendar_dates_swap
     day_of_year            smallint
         CHECK (day_of_year > 0)         NOT NULL, -- 'Day Number in Year -smallint'
     week                   smallint     NOT NULL, -- 'Week Number in Year (first day-monday) -tinyint'
-    week_num               smallint     NOT NULL, -- 'Week Number in Year (first day-monday) -tinyint'
+    week2                  char(2)      NOT NULL, -- 'Week Number in Year (first day-monday) -char(2)'
     week_finance           smallint     NOT NULL, -- 'Week Number (finance) -tinyint'
     week_fullname          char(23)     NOT NULL, -- 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)'
     year_week              char(7)      NOT NULL, -- 'Year Week YYYY/WW -char(7)'
@@ -140,6 +141,7 @@ CREATE INDEX index_calendar_year_month2
 
 CREATE INDEX index_calendar_year_quarter
     ON calendar_dates_swap (year_quarter);
+
 /*
  STEP 2.
 
@@ -167,7 +169,7 @@ DECLARE
     @special              varchar(50), @is_public_holiday bit, @day_of_period smallint, @quarter tinyint, @quarter_was tinyint, @number_of_calendar_week smallint,
     @day_cursor           date, @day_cursor_end date, @begin_of_period date, @end_of_period date, @day_num_since_2020 int, @week_num_since_2020 int,
     @month_num_since_2020 int, @quarter_num_since_2020 int, @year_num_since_2020 int , @week_day_number tinyint, @days_in_the_year smallint,
-    @is_weekend           bit, @is_working_day bit;
+    @is_weekend           bit, @is_working_day bit, @day_int int, @month_int int, @day_date date, @day_tomorrow date;
 
     SET @special = NULL;
     SET @is_public_holiday = NULL;
@@ -178,8 +180,8 @@ DECLARE
     SET @quarter_was = 4;
     SET @number_of_calendar_week = 53;
     SET @day_cursor_end = '2036.12.31';
+    SET @begin_of_period = '2019.10.01';
 
-    SET @begin_of_period = @day_cursor;
     SET @end_of_period = EOMONTH(DATEADD(MONTH, 3, @begin_of_period));
     SET @day_num_since_2020 = 1;
     SET @week_num_since_2020 = 1;
@@ -229,12 +231,12 @@ DECLARE
             END;
 
         IF (@week_day_number IN (6, 0))
-            SET @is_weekend = 1
+            SET @is_weekend = 1;
         ELSE
             SET @is_weekend = 0;
 
         IF (@is_public_holiday = 0 AND @is_weekend = 0)
-            SET @is_working_day = 1
+            SET @is_working_day = 1;
         ELSE
             SET @is_working_day = 0;
 
@@ -267,6 +269,11 @@ DECLARE
         IF @week_day_number = 1
             SET @week_num_since_2020 = @week_num_since_2020 + 1;
 
+        SET @day_date = CAST(@day_cursor AS date);
+        SET @day_int = DAY(@day_date);
+        SET @month_int = MONTH(@day_date);
+        SET @day_tomorrow = DATEADD(DAY, 1, @day_cursor);
+
         INSERT INTO calendar_dates_swap(date,
                                         date8,
                                         date_ymd,
@@ -287,7 +294,7 @@ DECLARE
                                         day_of_quarter,
                                         day_of_year,
                                         week,
-                                        week_num,
+                                        week2,
                                         week_finance,
                                         year_week,
                                         month,
@@ -336,13 +343,13 @@ DECLARE
                                         date_mmdd,
                                         week_fullname)
         VALUES (@day_cursor,
-                FORMAT(CAST(@day_cursor AS date), 'yyyyMMdd'),
-                FORMAT(CAST(@day_cursor AS date), 'yyyy-MM-dd'),
-                FORMAT(CAST(@day_cursor AS date), 'dd.MM.yyyy'),
-                FORMAT(CAST(@day_cursor AS date), 'dd.MM'),
-                FORMAT(CAST(@day_cursor AS date), 'MM/dd/yyyy'),
-                FORMAT(CAST(@day_cursor AS date), 'd MMM yy'),
-                FORMAT(CAST(@day_cursor AS date), 'd MMMM yy'),
+                FORMAT(@day_date, 'yyyyMMdd'),
+                FORMAT(@day_date, 'yyyy-MM-dd'),
+                FORMAT(@day_date, 'dd.MM.yyyy'),
+                FORMAT(@day_date, 'dd.MM'),
+                FORMAT(@day_date, 'MM/dd/yyyy'),
+                FORMAT(@day_date, 'd MMM yy'),
+                FORMAT(@day_date, 'd MMMM yy'),
                 @week_day_number,
                 CONCAT((@week_day_number + 1),
                        CASE
@@ -350,83 +357,83 @@ DECLARE
                            WHEN (@week_day_number + 1) = 1 THEN 'st'
                            WHEN (@week_day_number + 1) = 2 THEN 'nd'
                            ELSE 'rd' END),
-                (IIF(@week_day_number IN (6, 0), 0, 1)),
+                IIF(@week_day_number IN (6, 0), 0, 1),
                 @is_weekend,
-                DATENAME(WEEKDAY, CAST(@day_cursor AS date)),
-                LEFT(DATENAME(WEEKDAY, CAST(@day_cursor AS date)), 3),
-                DAY(CAST(@day_cursor AS date)),
-                FORMAT(CAST(@day_cursor AS date), 'dd'),
-                CONCAT(DAY(CAST(@day_cursor AS date)),
+                DATENAME(WEEKDAY, @day_date),
+                LEFT(DATENAME(WEEKDAY, @day_date), 3),
+                @day_int,
+                FORMAT(@day_date, 'dd'),
+                CONCAT(@day_int,
                        CASE
-                           WHEN DAY(CAST(@day_cursor AS date)) IN (1, 21, 31) THEN 'st'
-                           WHEN DAY(CAST(@day_cursor AS date)) IN (2, 22) THEN 'nd'
-                           WHEN DAY(CAST(@day_cursor AS date)) IN (3, 23) THEN 'rd'
+                           WHEN @day_int IN (1, 21, 31) THEN 'st'
+                           WHEN @day_int IN (2, 22) THEN 'nd'
+                           WHEN @day_int IN (3, 23) THEN 'rd'
                            ELSE 'th' END),
                 @day_of_period,
-                DATENAME(DAYOFYEAR, CAST(@day_cursor AS date)),
+                DATENAME(DAYOFYEAR, @day_date),
                 @number_of_calendar_week,
-                DATENAME(WEEK, CAST(@day_cursor AS date)),
-                DATENAME(ISO_WEEK, CAST(@day_cursor AS date)),
+                RIGHT(CONCAT('0', @number_of_calendar_week), 2),
+                DATENAME(ISO_WEEK, @day_date),
                 CONCAT(YEAR(@day_cursor), '/', RIGHT(CONCAT('0', @number_of_calendar_week), 2)),
-                MONTH(CAST(@day_cursor AS date)),
-                FORMAT(CAST(@day_cursor AS date), 'MM'),
-                DATENAME(MONTH, CAST(@day_cursor AS date)),
-                UPPER(LEFT(DATENAME(MM, CAST(@day_cursor AS date)), 3)),
+                @month_int,
+                FORMAT(@day_date, 'MM'),
+                DATENAME(MONTH, @day_date),
+                UPPER(LEFT(DATENAME(MM, @day_date), 3)),
                 @quarter,
                 CONCAT(YEAR(@day_cursor), ' ', @quarter),
-                YEAR(CAST(@day_cursor AS date)),
-                FORMAT(CAST(@day_cursor AS date), 'yy'),
-                FORMAT(CAST(@day_cursor AS date), 'yy'),
+                YEAR(@day_date),
+                FORMAT(@day_date, 'yy'),
+                FORMAT(@day_date, 'yy'),
                 @days_in_the_year,
                 CASE
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 21 AND MONTH(CAST(@day_cursor AS date)) = 3 OR
-                          DAY(CAST(@day_cursor AS date)) <= 19 AND MONTH(CAST(@day_cursor AS date)) = 4) THEN '03 Aries'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 20 AND MONTH(CAST(@day_cursor AS date)) = 4 OR
-                          DAY(CAST(@day_cursor AS date)) <= 20 AND MONTH(CAST(@day_cursor AS date)) = 5) THEN '04 Taurus'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 21 AND MONTH(CAST(@day_cursor AS date)) = 5 OR
-                          DAY(CAST(@day_cursor AS date)) <= 20 AND MONTH(CAST(@day_cursor AS date)) = 6) THEN '05 Gemini'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 21 AND MONTH(CAST(@day_cursor AS date)) = 6 OR
-                          DAY(CAST(@day_cursor AS date)) <= 22 AND MONTH(CAST(@day_cursor AS date)) = 7) THEN '06 Cancer'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 23 AND MONTH(CAST(@day_cursor AS date)) = 7 OR
-                          DAY(CAST(@day_cursor AS date)) <= 22 AND MONTH(CAST(@day_cursor AS date)) = 8) THEN '07 Leo'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 23 AND MONTH(CAST(@day_cursor AS date)) = 8 OR
-                          DAY(CAST(@day_cursor AS date)) <= 22 AND MONTH(CAST(@day_cursor AS date)) = 9) THEN '08 Virgo'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 23 AND MONTH(CAST(@day_cursor AS date)) = 9 OR
-                          DAY(CAST(@day_cursor AS date)) <= 22 AND MONTH(CAST(@day_cursor AS date)) = 10) THEN '09 Libra'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 23 AND MONTH(CAST(@day_cursor AS date)) = 10 OR
-                          DAY(CAST(@day_cursor AS date)) <= 21 AND MONTH(CAST(@day_cursor AS date)) = 11) THEN '10 Scorpio'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 22 AND MONTH(CAST(@day_cursor AS date)) = 11 OR
-                          DAY(CAST(@day_cursor AS date)) <= 21 AND MONTH(CAST(@day_cursor AS date)) = 12) THEN '11 Sagittarius'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 22 AND MONTH(CAST(@day_cursor AS date)) = 12 OR
-                          DAY(CAST(@day_cursor AS date)) <= 20 AND MONTH(CAST(@day_cursor AS date)) = 1) THEN '12 Capricorn'
-                    WHEN (DAY(CAST(@day_cursor AS date)) >= 21 AND MONTH(CAST(@day_cursor AS date)) = 1 OR
-                          DAY(CAST(@day_cursor AS date)) <= 18 AND MONTH(CAST(@day_cursor AS date)) = 2) THEN '01 Aquarius'
+                    WHEN (@day_int >= 21 AND @month_int = 3 OR
+                          @day_int <= 19 AND @month_int = 4) THEN '03 Aries'
+                    WHEN (@day_int >= 20 AND @month_int = 4 OR
+                          @day_int <= 20 AND @month_int = 5) THEN '04 Taurus'
+                    WHEN (@day_int >= 21 AND @month_int = 5 OR
+                          @day_int <= 20 AND @month_int = 6) THEN '05 Gemini'
+                    WHEN (@day_int >= 21 AND @month_int = 6 OR
+                          @day_int <= 22 AND @month_int = 7) THEN '06 Cancer'
+                    WHEN (@day_int >= 23 AND @month_int = 7 OR
+                          @day_int <= 22 AND @month_int = 8) THEN '07 Leo'
+                    WHEN (@day_int >= 23 AND @month_int = 8 OR
+                          @day_int <= 22 AND @month_int = 9) THEN '08 Virgo'
+                    WHEN (@day_int >= 23 AND @month_int = 9 OR
+                          @day_int <= 22 AND @month_int = 10) THEN '09 Libra'
+                    WHEN (@day_int >= 23 AND @month_int = 10 OR
+                          @day_int <= 21 AND @month_int = 11) THEN '10 Scorpio'
+                    WHEN (@day_int >= 22 AND @month_int = 11 OR
+                          @day_int <= 21 AND @month_int = 12) THEN '11 Sagittarius'
+                    WHEN (@day_int >= 22 AND @month_int = 12 OR
+                          @day_int <= 20 AND @month_int = 1) THEN '12 Capricorn'
+                    WHEN (@day_int >= 21 AND @month_int = 1 OR
+                          @day_int <= 18 AND @month_int = 2) THEN '01 Aquarius'
                     ELSE '02 Pisces' END,
                 @is_public_holiday,
-                FORMAT(CAST(@day_cursor AS date), 'dd MMMM yyyy (ww)'),
+                FORMAT(@day_date, 'dd MMMM yyyy (ww)'),
                 IIF(@week_day_number = 0, 1, 0),
-                IIF(DAY(DATEADD(DAY, 1, CAST(@day_cursor AS date))) = 1, 1, 0),
-                IIF(MONTH(DATEADD(DAY, 1, CAST(@day_cursor AS date))) IN (1, 4, 7, 10)
-                        AND DAY(DATEADD(DAY, 1, CAST(@day_cursor AS date))) = 1, 1, 0),
-                IIF(MONTH(DATEADD(DAY, 1, CAST(@day_cursor AS date))) = 1
-                        AND DAY(DATEADD(DAY, 1, CAST(@day_cursor AS date))) = 1, 1, 0),
-                DATEADD(DAY, IIF((@week_day_number = 0), -6, -@week_day_number + 1), CAST(@day_cursor AS date)),
+                IIF(DAY(@day_tomorrow) = 1, 1, 0),
+                IIF(MONTH(@day_tomorrow) IN (1, 4, 7, 10)
+                        AND DAY(@day_tomorrow) = 1, 1, 0),
+                IIF(MONTH(@day_tomorrow) = 1
+                        AND DAY(@day_tomorrow) = 1, 1, 0),
+                DATEADD(DAY, IIF((@week_day_number = 0), -6, -@week_day_number + 1), @day_date),
                 DATEADD(DAY, IIF((@week_day_number = 0), 0, 7 - @week_day_number),
-                        CAST(@day_cursor AS date)),
-                CAST(FORMAT(CAST(@day_cursor AS date), 'yyyy-MM-01') AS date),
-                EOMONTH(CAST(@day_cursor AS date)),
+                        @day_date),
+                CAST(FORMAT(@day_date, 'yyyy-MM-01') AS date),
+                EOMONTH(@day_date),
                 @begin_of_period,
                 @end_of_period,
-                CAST(FORMAT(CAST(@day_cursor AS date), 'yyyy-01-01') AS date),
-                CAST(FORMAT(CAST(@day_cursor AS date), 'yyyy-12-31') AS date),
-                DATEADD(DAY, -7, CAST(@day_cursor AS date)),
-                DATEADD(DAY, 7, CAST(@day_cursor AS date)),
-                DATEADD(MONTH, -1, CAST(@day_cursor AS date)),
-                DATEADD(MONTH, 1, CAST(@day_cursor AS date)),
-                DATEADD(MONTH, -3, CAST(@day_cursor AS date)),
-                DATEADD(MONTH, 3, CAST(@day_cursor AS date)),
-                DATEADD(YEAR, -1, CAST(@day_cursor AS date)),
-                DATEADD(YEAR, 1, CAST(@day_cursor AS date)),
+                CAST(FORMAT(@day_date, 'yyyy-01-01') AS date),
+                CAST(FORMAT(@day_date, 'yyyy-12-31') AS date),
+                DATEADD(DAY, -7, @day_date),
+                DATEADD(DAY, 7, @day_date),
+                DATEADD(MONTH, -1, @day_date),
+                DATEADD(MONTH, 1, @day_date),
+                DATEADD(MONTH, -3, @day_date),
+                DATEADD(MONTH, 3, @day_date),
+                DATEADD(YEAR, -1, @day_date),
+                DATEADD(YEAR, 1, @day_date),
                 @special,
                 @is_working_day,
                 @day_num_since_2020,
@@ -434,16 +441,16 @@ DECLARE
                 @month_num_since_2020,
                 @quarter_num_since_2020,
                 @year_num_since_2020,
-                FORMAT(CAST(@day_cursor AS date), 'yyyy-MM'),
-                DATEADD(DAY, 1, CAST(@day_cursor AS date)),
-                DATEADD(DAY, -1, CAST(@day_cursor AS date)),
-                FORMAT(CAST(@day_cursor AS date), 'MM-dd'),
+                FORMAT(@day_date, 'yyyy-MM'),
+                @day_tomorrow,
+                DATEADD(DAY, -1, @day_date),
+                FORMAT(@day_date, 'MM-dd'),
                 CONCAT(FORMAT(DATEADD(DAY,
                                       IIF((@week_day_number = 0), -6, -@week_day_number + 1),
-                                      CAST(@day_cursor AS date)), 'yy-MM-dd - '),
+                                      @day_date), 'yy-MM-dd - '),
                        FORMAT(DATEADD(DAY,
                                       IIF((@week_day_number = 0), 0, 7 - @week_day_number),
-                                      CAST(@day_cursor AS date)), 'yy-MM-dd')));
+                                      @day_date), 'yy-MM-dd')));
 
         SET @day_cursor = DATEADD(DAY, 1, @day_cursor);
 
@@ -500,13 +507,13 @@ CREATE TRIGGER updatemodified
 /*
 result:
 
-date,date8,date_ymd,date_dmy,date_mdy,date_ddmm,date_mmdd,date_dmmmy,date_dmmmmy,day_of_week,day_of_week_char,is_weekday,is_weekend,is_last_day_of_week,is_last_day_of_month,is_last_day_of_quarter,is_last_day_of_year,day_name,day_name3,day_of_month,day_of_month2,day_of_quarter,day_of_year,week,week_num,week_finance,week_fullname,month,month2,year_month2,month_name,month_name3,quarter,year,year2,year2c,days_in_year,next_date,prev_date,day_num_since_2020,week_num_since_2020,month_num_since_2020,quarter_num_since_2020,year_num_since_2020,week_begin,week_end,month_begin,month_end,quarter_begin,quarter_end,year_begin,year_end,week_before,week_after,month_before,month_after,quarter_before,quarter_after,year_before,year_after,is_working_day,is_public_holiday,special_date,zodiac,created_at,updated_at,fullname,DESCRIPTION
-2022-12-31,20221231,2022-12-31,31.12.2022,12/31/2022,31.12,12-31,31 Dec 22 ,31 December 22,7,Saturday,true,false,false,true,true,true,7,Sat,31,31,92,365,52,53,52,22-12-25 - 22-12-31  ,12,12,2022-12,December,DEC,7,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,12,3,2022-12-25,2022-12-31,2022-12-01,2022-12-31,2022-10-01,2023-01-31,2022-01-01,2022-12-31,2022-12-24,2023-01-07,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,true,false,,12 Capricorn,2023-11-18 02:39:44.819917,,31 December 2022 (ww),
-2023-02-25,20230225,2023-02-25,25.02.2023,02/25/2023,25.02,02-25,25 Feb 23 ,25 February 23,7,Saturday,true,false,false,false,false,false,7,Sat,25,25,56,56,8,8,8,23-02-19 - 23-02-25  ,2,02,2023-02,February,FEB,1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,13,4,2023-02-19,2023-02-25,2023-02-01,2023-02-28,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-02-18,2023-03-04,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,true,false,,02 Pisces,2023-11-18 02:39:44.835547,,25 February 2023 (ww),
-2023-03-31,20230331,2023-03-31,31.03.2023,03/31/2023,31.03,03-31,31 Mar 23 ,31 March 23,6,Friday,false,true,false,true,true,false,6,Fri,31,31,90,90,13,13,13,23-03-26 - 23-04-01  ,3,03,2023-03,March,MAR,1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,13,4,2023-03-26,2023-04-01,2023-03-01,2023-03-31,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-03-24,2023-04-07,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,false,false,,03 Aries,2023-11-18 02:39:44.835547,,31 March 2023 (ww),
-2023-11-18,20231118,2023-11-18,18.11.2023,11/18/2023,18.11,11-18,18 Nov 23 ,18 November 23,7,Saturday,true,false,false,false,false,false,7,Sat,18,18,49,322,46,46,46,23-11-12 - 23-11-18  ,11,11,2023-11,November,NOV,7,2023,23,23,365,2023-11-19,2023-11-17,1419,203,47,16,4,2023-11-12,2023-11-18,2023-11-01,2023-11-30,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-11,2023-11-25,2023-10-18,2023-12-18,2023-08-18,2024-02-18,2022-11-18,2024-11-18,true,false,,10 Scorpio,2023-11-18 02:39:44.882793,,18 November 2023 (ww),
-2023-12-01,20231201,2023-12-01,01.12.2023,12/01/2023,01.12,12-01,1 Dec 23  ,1 December 23,6,Friday,false,true,false,false,false,false,6,Fri,1,01,62,335,48,48,48,23-11-26 - 23-12-02  ,12,12,2023-12,December,DEC,7,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,16,4,2023-11-26,2023-12-02,2023-12-01,2023-12-31,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-24,2023-12-08,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,false,false,,11 Sagittarius,2023-11-18 02:39:44.882793,,01 December 2023 (ww),
-2024-01-01,20240101,2024-01-01,01.01.2024,01/01/2024,01.01,01-01,1 Jan 24  ,1 January 24,2,Monday,true,false,false,false,false,false,2,Mon,1,01,1,1,53,1,1,23-12-31 - 24-01-06  ,1,01,2024-01,January,JAN,1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,17,5,2023-12-31,2024-01-06,2024-01-01,2024-01-31,2024-01-01,2024-04-30,2024-01-01,2024-12-31,2023-12-25,2024-01-08,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,false,true,New Year Day,12 Capricorn,2023-11-18 02:39:44.898424,,01 January 2024 (ww),
+date,date8,date_ymd,date_dmy,date_mdy,date_ddmm,date_mmdd,date_dmmmy,date_dmmmmy,day_of_week,day_of_week_char,is_weekday,is_weekend,is_last_day_of_week,is_last_day_of_month,is_last_day_of_quarter,is_last_day_of_year,day_name,day_name3,day_of_month,day_of_month2,day_of_month_char,day_of_quarter,day_of_year,week,week2,week_finance,week_fullname,year_week,month,month2,year_month2,month_name,month_name3,quarter,year_quarter,year,year2,year2c,days_in_year,next_date,prev_date,day_num_since_2020,week_num_since_2020,month_num_since_2020,quarter_num_since_2020,year_num_since_2020,week_begin,week_end,month_begin,month_end,quarter_begin,quarter_end,year_begin,year_end,week_before,week_after,month_before,month_after,quarter_before,quarter_after,year_before,year_after,is_working_day,is_public_holiday,special_date,zodiac,created_at,updated_at,fullname,description
+2022-12-31,20221231,2022-12-31,31.12.2022,12/31/2022,31.12,12-31,31 Dec 22  ,31 December 22,6,7th,false,true,false,true,true,true,Saturday,Sat,31,31,31st,92,365,52,52,52,22-12-26 - 23-01-01    ,2022/52,12,12,2022-12,December,DEC,4,2022 4,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,13,3,2022-12-26,2023-01-01,2022-12-01,2022-12-31,2022-10-01,2023-01-31,2022-01-01,2022-12-31,2022-12-24,2023-01-07,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,false,false,,12 Capricorn,2023-11-22 03:49:34.970507,,31 December 2022 (ww),
+2023-02-25,20230225,2023-02-25,25.02.2023,02/25/2023,25.02,02-25,25 Feb 23  ,25 February 23,6,7th,false,true,false,false,false,false,Saturday,Sat,25,25,25th,56,56,8,08,8,23-02-20 - 23-02-26    ,2023/08,2,02,2023-02,February,FEB,1,2023 1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,14,4,2023-02-20,2023-02-26,2023-02-01,2023-02-28,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-02-18,2023-03-04,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,false,false,,02 Pisces,2023-11-22 03:49:34.986141,,25 February 2023 (ww),
+2023-03-31,20230331,2023-03-31,31.03.2023,03/31/2023,31.03,03-31,31 Mar 23  ,31 March 23,5,6th,true,false,false,true,true,false,Friday,Fri,31,31,31st,90,90,13,13,13,23-03-27 - 23-04-02    ,2023/13,3,03,2023-03,March,MAR,1,2023 1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,14,4,2023-03-27,2023-04-02,2023-03-01,2023-03-31,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-03-24,2023-04-07,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,true,false,,03 Aries,2023-11-22 03:49:34.986141,,31 March 2023 (ww),
+2023-11-22,20231122,2023-11-22,22.11.2023,11/22/2023,22.11,11-22,22 Nov 23  ,22 November 23,3,4th,true,false,false,false,false,false,Wednesday,Wed,22,22,22nd,53,326,47,47,47,23-11-20 - 23-11-26    ,2023/47,11,11,2023-11,November,NOV,4,2023 4,2023,23,23,365,2023-11-23,2023-11-21,1423,204,47,17,4,2023-11-20,2023-11-26,2023-11-01,2023-11-30,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-15,2023-11-29,2023-10-22,2023-12-22,2023-08-22,2024-02-22,2022-11-22,2024-11-22,true,false,,11 Sagittarius,2023-11-22 03:49:35.064257,,22 November 2023 (ww),
+2023-12-01,20231201,2023-12-01,01.12.2023,12/01/2023,01.12,12-01,1 Dec 23   ,1 December 23,5,6th,true,false,false,false,false,false,Friday,Fri,1,01,1st,62,335,48,48,48,23-11-27 - 23-12-03    ,2023/48,12,12,2023-12,December,DEC,4,2023 4,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,17,4,2023-11-27,2023-12-03,2023-12-01,2023-12-31,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-24,2023-12-08,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,true,false,,11 Sagittarius,2023-11-22 03:49:35.064257,,01 December 2023 (ww),
+2024-01-01,20240101,2024-01-01,01.01.2024,01/01/2024,01.01,01-01,1 Jan 24   ,1 January 24,1,2nd,true,false,false,false,false,false,Monday,Mon,1,01,1st,1,1,1,01,1,24-01-01 - 24-01-07    ,2024/01,1,01,2024-01,January,JAN,1,2024 1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,18,5,2024-01-01,2024-01-07,2024-01-01,2024-01-31,2024-01-01,2024-04-30,2024-01-01,2024-12-31,2023-12-25,2024-01-08,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,false,true,New Year Day,12 Capricorn,2023-11-22 03:49:35.079882,,01 January 2024 (ww),
  */
 
 -- NEXT: calendar_hours presented in separated sql file

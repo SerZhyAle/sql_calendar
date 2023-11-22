@@ -17,7 +17,7 @@
 
  USE Your_database_schema
 
- Use the '_swap' table for creation, flling the table before swap it onto place with one transaction:
+ Use the '_swap' table for creation, filling the table before swap it onto place with one transaction:
  */
 
 DROP TABLE IF EXISTS calendar_dates_swap;
@@ -52,7 +52,7 @@ CREATE TABLE calendar_dates_swap
     day_of_quarter         tinyint           NOT NULL COMMENT 'Day Number in Quarter -tinyint',
     day_of_year            smallint UNSIGNED NOT NULL COMMENT 'Day Number in Year -smallint',
     week                   tinyint           NOT NULL COMMENT 'Week Number in Year (first day-monday) -tinyint',
-    week_num               tinyint           NOT NULL COMMENT 'Week Number in Year (first day-monday) -tinyint',
+    week2                  char(2)           NOT NULL COMMENT 'Week Number in Year (first day-monday) -char(2)',
     week_finance           tinyint           NOT NULL COMMENT 'Week Number (finance) -tinyint',
     week_fullname          char(23)          NOT NULL COMMENT 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)',
     year_week              char(7)           NOT NULL COMMENT 'Year week YYYY/WW -char(7)',
@@ -62,7 +62,7 @@ CREATE TABLE calendar_dates_swap
     month_name             varchar(10)       NOT NULL COMMENT 'Month Name -varchar(10)',
     month_name3            char(3)           NOT NULL COMMENT 'Month Name -char(3)',
     quarter                tinyint UNSIGNED  NOT NULL COMMENT 'Quarter Number in Year -tinyint',
-    year_quarter char(6) NOT NULL  comment 'Year quarter YYYY Q -char(6)',
+    year_quarter           char(6)           NOT NULL COMMENT 'Year quarter YYYY Q -char(6)',
     year                   smallint          NOT NULL COMMENT 'Year -smallint',
     year2                  tinyint UNSIGNED  NOT NULL COMMENT 'Year last 2 figures -tinyint',
     year2c                 char(2)           NOT NULL COMMENT 'Year last 2 chars -char(2)',
@@ -71,11 +71,11 @@ CREATE TABLE calendar_dates_swap
     next_date              date              NOT NULL COMMENT 'Next Date -date',
     prev_date              date              NOT NULL COMMENT 'Previous Date -date',
 
-    day_num_since_2020     int UNSIGNED      NOT NULL COMMENT 'Day number since 2020-01-01 for order -int',
-    week_num_since_2020    int UNSIGNED      NOT NULL COMMENT 'Week number since 2020-01-01 for order -int',
-    month_num_since_2020   int UNSIGNED      NOT NULL COMMENT 'Month number since 2020-01-01 for order -int',
-    quarter_num_since_2020 tinyint UNSIGNED  NOT NULL COMMENT 'Quarter number since 2020-01-01 for order -tinyint',
-    year_num_since_2020    tinyint UNSIGNED  NOT NULL COMMENT 'Year number since 2020-01-01 for order -tinyint',
+    day_num_since_2020     int               NOT NULL COMMENT 'Day number since 2020-01-01 for order -int',
+    week_num_since_2020    int               NOT NULL COMMENT 'Week number since 2020-01-01 for order -int',
+    month_num_since_2020   int               NOT NULL COMMENT 'Month number since 2020-01-01 for order -int',
+    quarter_num_since_2020 tinyint           NOT NULL COMMENT 'Quarter number since 2020-01-01 for order -tinyint',
+    year_num_since_2020    tinyint           NOT NULL COMMENT 'Year number since 2020-01-01 for order -tinyint',
 
     week_begin             date              NOT NULL COMMENT 'Date of begin of this week -date',
     week_end               date              NOT NULL COMMENT 'Date of end of this week -date',
@@ -126,11 +126,11 @@ CREATE INDEX index_calendar_year_quarter
 /*
  -- _________________________________________________________________ --
  STEP 2.
- 
+
  Fill the calendar_dates:
- 
+
  The next procedure stored to fill the calendar:
- 
+
  Attention:
  SET @day_cursor = '2019.12.31'; -- The BEGIN of the Dates
  SET @day_cursor_end = '2036.12.31';  -- The END of the dates. You probably know what is going on later.
@@ -148,13 +148,13 @@ BEGIN
     SET @is_public_holiday = NULL;
     SET @day_of_period = 1;
 
-    SET @day_cursor = '2019.12.31';
+    SET @day_cursor = '2019-12-31';
     SET @quarter = 4; -- for '2019.12.31'
     SET @quarter_was = 4; -- for '2019.12.31'
     SET @number_of_calendar_week = 53; -- for '2019.12.31'
-    SET @day_cursor_end = '2036.12.31';
+    SET @day_cursor_end = '2036-12-31';
+    SET @begin_of_period = '2019-10-01';
 
-    SET @begin_of_period = @day_cursor;
     SET @end_of_period = LAST_DAY(DATE_ADD(@begin_of_period, INTERVAL 3 MONTH));
     SET @day_num_since_2020 = 1,
         @week_num_since_2020 = 1,
@@ -313,8 +313,9 @@ BEGIN
                 SET @week_num_since_2020 = @week_num_since_2020 + 1;
             END IF;
 
+            SET @month_cursor = EXTRACT(MONTH FROM @day_cursor);
             SET @day_of_cursor = EXTRACT(DAY FROM @day_cursor);
-            SET @month_of_cursor = EXTRACT(MONTH FROM @day_cursor);
+            SET @tomorrow = EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY));
 
             INSERT INTO calendar_dates_swap(date,
                                             date8,
@@ -336,7 +337,7 @@ BEGIN
                                             day_of_quarter,
                                             day_of_year,
                                             week,
-                                            week_num,
+                                            week2,
                                             week_finance,
                                             year_week,
                                             month,
@@ -402,69 +403,69 @@ BEGIN
                     @is_weekend,
                     DATE_FORMAT(@day_cursor, '%W'),
                     DATE_FORMAT(@day_cursor, '%a'),
-                    @day_of_cursor,
+                    EXTRACT(DAY FROM @day_cursor),
                     DATE_FORMAT(@day_cursor, '%d'),
                     DATE_FORMAT(@day_cursor, '%D'),
                     @day_of_period,
                     DATE_FORMAT(@day_cursor, '%j'),
                     @number_of_calendar_week,
-                    WEEK(@day_cursor, 1),
+                    RIGHT(CONCAT('0', WEEK(@day_cursor, 1)), 2),
                     DATE_FORMAT(@day_cursor, '%v'),
                     CONCAT(EXTRACT(YEAR FROM @day_cursor), '/', RIGHT(CONCAT('0', @number_of_calendar_week), 2)),
-                    @month_of_cursor,
+                    @month_cursor,
                     DATE_FORMAT(@day_cursor, '%m'),
                     DATE_FORMAT(@day_cursor, '%M'),
                     DATE_FORMAT(@day_cursor, '%b'),
                     @quarter,
-                    concat(EXTRACT(YEAR FROM @day_cursor), ' ', @quarter),
+                    CONCAT(EXTRACT(YEAR FROM @day_cursor), ' ', @quarter),
                     EXTRACT(YEAR FROM @day_cursor),
                     DATE_FORMAT(@day_cursor, '%y'),
                     DATE_FORMAT(@day_cursor, '%y'),
                     @days_in_the_year,
                     CASE
-                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 3
-                            OR @day_of_cursor <= 19 AND @month_of_cursor = 4)
+                        WHEN (@day_of_cursor >= 21 AND @month_cursor = 3
+                            OR @day_of_cursor <= 19 AND @month_cursor = 4)
                             THEN '03 Aries'
-                        WHEN (@day_of_cursor >= 20 AND @month_of_cursor = 4
-                            OR @day_of_cursor <= 20 AND @month_of_cursor = 5)
+                        WHEN (@day_of_cursor >= 20 AND @month_cursor = 4
+                            OR @day_of_cursor <= 20 AND @month_cursor = 5)
                             THEN '04 Taurus'
-                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 5
-                            OR @day_of_cursor <= 20 AND @month_of_cursor = 6)
+                        WHEN (@day_of_cursor >= 21 AND @month_cursor = 5
+                            OR @day_of_cursor <= 20 AND @month_cursor = 6)
                             THEN '05 Gemini'
-                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 6
-                            OR @day_of_cursor <= 22 AND @month_of_cursor = 7)
+                        WHEN (@day_of_cursor >= 21 AND @month_cursor = 6
+                            OR @day_of_cursor <= 22 AND @month_cursor = 7)
                             THEN '06 Cancer'
-                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 7
-                            OR @day_of_cursor <= 22 AND @month_of_cursor = 8)
+                        WHEN (@day_of_cursor >= 23 AND @month_cursor = 7
+                            OR @day_of_cursor <= 22 AND @month_cursor = 8)
                             THEN '07 Leo'
-                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 8
-                            OR @day_of_cursor <= 22 AND @month_of_cursor = 9)
+                        WHEN (@day_of_cursor >= 23 AND @month_cursor = 8
+                            OR @day_of_cursor <= 22 AND @month_cursor = 9)
                             THEN '08 Virgo'
-                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 9
-                            OR @day_of_cursor <= 22 AND @month_of_cursor = 10)
+                        WHEN (@day_of_cursor >= 23 AND @month_cursor = 9
+                            OR @day_of_cursor <= 22 AND @month_cursor = 10)
                             THEN '09 Libra'
-                        WHEN (@day_of_cursor >= 23 AND @month_of_cursor = 10
-                            OR @day_of_cursor <= 21 AND @month_of_cursor = 11)
+                        WHEN (@day_of_cursor >= 23 AND @month_cursor = 10
+                            OR @day_of_cursor <= 21 AND @month_cursor = 11)
                             THEN '10 Scorpio'
-                        WHEN (@day_of_cursor >= 22 AND @month_of_cursor = 11
-                            OR @day_of_cursor <= 21 AND @month_of_cursor = 12)
+                        WHEN (@day_of_cursor >= 22 AND @month_cursor = 11
+                            OR @day_of_cursor <= 21 AND @month_cursor = 12)
                             THEN '11 Sagittarius'
-                        WHEN (@day_of_cursor >= 22 AND @month_of_cursor = 12
-                            OR @day_of_cursor <= 20 AND @month_of_cursor = 1)
+                        WHEN (@day_of_cursor >= 22 AND @month_cursor = 12
+                            OR @day_of_cursor <= 20 AND @month_cursor = 1)
                             THEN '12 Capricorn'
-                        WHEN (@day_of_cursor >= 21 AND @month_of_cursor = 1
-                            OR @day_of_cursor <= 18 AND @month_of_cursor = 2)
+                        WHEN (@day_of_cursor >= 21 AND @month_cursor = 1
+                            OR @day_of_cursor <= 18 AND @month_cursor = 2)
                             THEN '01 Aquarius'
                         ELSE '02 Pisces'
                         END,
                     @is_public_holiday,
                     DATE_FORMAT(@day_cursor, '%D %M %Y (%W)'),
                     IF(@week_day_number = 0, 1, 0),
-                    IF(EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                    IF(@tomorrow = 1, 1, 0),
                     IF(EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) IN (1, 4, 7, 10)
-                           AND EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                           AND @tomorrow = 1, 1, 0),
                     IF(EXTRACT(MONTH FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1
-                           AND EXTRACT(DAY FROM DATE_ADD(@day_cursor, INTERVAL 1 DAY)) = 1, 1, 0),
+                           AND @tomorrow = 1, 1, 0),
                     DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1) DAY),
                     DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number) DAY),
                     DATE_FORMAT(@day_cursor, '%Y-%m-01'),
@@ -492,15 +493,16 @@ BEGIN
                     DATE_ADD(@day_cursor, INTERVAL 1 DAY),
                     DATE_ADD(@day_cursor, INTERVAL -1 DAY),
                     DATE_FORMAT(@day_cursor, '%m-%d'),
-                    CONCAT(DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1) DAY), ' - ',
-                           DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number) DAY)));
+                    CONCAT(DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, -6, -@week_day_number + 1)
+                                    DAY), ' - ',
+                           DATE_ADD(@day_cursor, INTERVAL IF(@week_day_number = 0, 0, 7 - @week_day_number)
+                                    DAY)));
 
             SET @day_cursor = DATE_ADD(@day_cursor, INTERVAL 1 DAY);
             SET @day_of_period = @day_of_period + 1;
             SET @day_num_since_2020 = @day_num_since_2020 + 1;
 
         END WHILE;
-
     START TRANSACTION ;
     DROP TABLE IF EXISTS calendar_dates;
     RENAME TABLE calendar_dates_swap TO calendar_dates;
@@ -520,7 +522,7 @@ CALL service_calendar_dates_population();
 
 /*
  Check it..
-
+ */
 SELECT *
 FROM calendar_dates;
 
@@ -536,16 +538,16 @@ SELECT *
 FROM calendar_dates
 WHERE date IN (CURRENT_DATE, '2023.12.01', '2024.01.01', '2023-02-25', '2022-12-31', '2023-03-31')
 ORDER BY date;
-
+/*
 result:
 
-date,date_8,date_ymd,date_dmy,date_mdy,date_ddmm,date_mmdd,date_dmmmy,date_dmmmmy,day_of_week,day_of_week_char,is_weekday,is_weekend,is_last_day_of_week,is_last_day_of_month,is_last_day_of_quarter,is_last_day_of_year,day_name,day_name3,day_of_month,day_of_month2,day_of_quarter,day_of_year,week,week_num,week_finance,week_fullname,month,month2,year_month2,month_name,month_name3,quarter,year,year2,year2c,days_in_year,next_date,prev_date,day_num_since_2020,week_num_since_2020,month_num_since_2020,quarter_num_since_2020,year_num_since_2020,week_begin,week_end,month_begin,month_end,quarter_begin,quarter_end,year_begin,year_end,week_before,week_after,month_before,month_after,quarter_before,quarter_after,year_before,year_after,is_working_day,is_public_holiday,special_date,zodiac,created_at,updated_at,fullname,description
-2022-12-31,20221231,2022.12.31,31.12.2022,12.31.2022,31.12,12-31,31 Dec 2022,31 December 2022,6,31st,0,1,0,1,1,1,6,Sat,31,31,92,365,52,52,52,2022-12-26 - 2023-01-01,12,12,2022-12,December,Dec,4,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,12,3,2022-12-26,2023-01-01,2022-12-01,2022-12-31,2022-10-01,2023-01-31,2022-01-01,2022-12-31,2022-05-31,2023-07-31,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,0,0,,12 Capricorn,2023-11-16 02:53:14.160882,,31st December 2022 (Saturday),
-2023-02-25,20230225,2023.02.25,25.02.2023,02.25.2023,25.02,02-25,25 Feb 2023,25 February 2023,6,25th,0,1,0,0,0,0,6,Sat,25,25,56,56,8,8,8,2023-02-20 - 2023-02-26,2,02,2023-02,February,Feb,1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,13,4,2023-02-20,2023-02-26,2023-02-01,2023-02-28,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2022-07-25,2023-09-25,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,0,0,,02 Pisces,2023-11-16 02:53:14.294048,,25th February 2023 (Saturday),
-2023-03-31,20230331,2023.03.31,31.03.2023,03.31.2023,31.03,03-31,31 Mar 2023,31 March 2023,5,31st,1,0,0,1,1,0,5,Fri,31,31,90,90,13,13,13,2023-03-27 - 2023-04-02,3,03,2023-03,March,Mar,1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,13,4,2023-03-27,2023-04-02,2023-03-01,2023-03-31,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2022-08-31,2023-10-31,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,1,0,,03 Aries,2023-11-16 02:53:14.376909,,31st March 2023 (Friday),
-2023-11-16,20231116,2023.11.16,16.11.2023,11.16.2023,16.11,11-16,16 Nov 2023,16 November 2023,4,16th,1,0,0,0,0,0,4,Thu,16,16,47,320,46,46,46,2023-11-13 - 2023-11-19,11,11,2023-11,November,Nov,4,2023,23,23,365,2023-11-17,2023-11-15,1417,203,47,16,4,2023-11-13,2023-11-19,2023-11-01,2023-11-30,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-04-16,2024-06-16,2023-10-16,2023-12-16,2023-08-16,2024-02-16,2022-11-16,2024-11-16,1,0,,10 Scorpio,2023-11-16 02:53:14.930709,,16th November 2023 (Thursday),
-2023-12-01,20231201,2023.12.01,01.12.2023,12.01.2023,01.12,12-01,01 Dec 2023,01 December 2023,5,1st,1,0,0,0,0,0,5,Fri,1,01,62,335,48,48,48,2023-11-27 - 2023-12-03,12,12,2023-12,December,Dec,4,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,16,4,2023-11-27,2023-12-03,2023-12-01,2023-12-31,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-05-01,2024-07-01,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,1,0,,11 Sagittarius,2023-11-16 02:53:14.965407,,1st December 2023 (Friday),
-2024-01-01,20240101,2024.01.01,01.01.2024,01.01.2024,01.01,01-01,01 Jan 2024,01 January 2024,1,1st,1,0,0,0,0,0,1,Mon,1,01,1,1,1,1,1,2024-01-01 - 2024-01-07,1,01,2024-01,January,Jan,1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,17,5,2024-01-01,2024-01-07,2024-01-01,2024-01-31,2024-01-01,2024-04-30,2024-01-01,2024-12-31,2023-06-01,2024-08-01,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,0,1,New Year Day,12 Capricorn,2023-11-16 02:53:15.043156,,1st January 2024 (Monday),
+date,date8,date_ymd,date_dmy,date_mdy,date_ddmm,date_mmdd,date_dmmmy,date_dmmmmy,day_of_week,day_of_week_char,is_weekday,is_weekend,is_last_day_of_week,is_last_day_of_month,is_last_day_of_quarter,is_last_day_of_year,day_name,day_name3,day_of_month,day_of_month2,day_of_month_char,day_of_quarter,day_of_year,week,week2,week_finance,week_fullname,year_week,month,month2,year_month2,month_name,month_name3,quarter,year_quarter,year,year2,year2c,days_in_year,next_date,prev_date,day_num_since_2020,week_num_since_2020,month_num_since_2020,quarter_num_since_2020,year_num_since_2020,week_begin,week_end,month_begin,month_end,quarter_begin,quarter_end,year_begin,year_end,week_before,week_after,month_before,month_after,quarter_before,quarter_after,year_before,year_after,is_working_day,is_public_holiday,special_date,zodiac,created_at,updated_at,fullname,description
+2022-12-31,20221231,2022-12-31,31.12.2022,12/31/2022,31.12,12-31,31 Dec 2022,31 December 2022,6,7th,0,1,0,1,1,1,Saturday,Sat,31,31,31st,92,365,52,52,52,2022-12-26 - 2023-01-01,2022/52,12,12,2022-12,December,Dec,4,2022 4,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,13,3,2022-12-26,2023-01-01,2022-12-01,2022-12-31,2022-10-01,2023-01-31,2022-01-01,2022-12-31,2022-12-24,2023-01-07,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,0,0,,12 Capricorn,2023-11-22 03:45:21.483214,,31st December 2022 (Saturday),
+2023-02-25,20230225,2023-02-25,25.02.2023,02/25/2023,25.02,02-25,25 Feb 2023,25 February 2023,6,7th,0,1,0,0,0,0,Saturday,Sat,25,25,25th,56,56,8,8,8,2023-02-20 - 2023-02-26,2023/08,2,02,2023-02,February,Feb,1,2023 1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,14,4,2023-02-20,2023-02-26,2023-02-01,2023-02-28,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-02-18,2023-03-04,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,0,0,,02 Pisces,2023-11-22 03:45:21.646322,,25th February 2023 (Saturday),
+2023-03-31,20230331,2023-03-31,31.03.2023,03/31/2023,31.03,03-31,31 Mar 2023,31 March 2023,5,6th,1,0,0,1,1,0,Friday,Fri,31,31,31st,90,90,13,13,13,2023-03-27 - 2023-04-02,2023/13,3,03,2023-03,March,Mar,1,2023 1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,14,4,2023-03-27,2023-04-02,2023-03-01,2023-03-31,2023-01-01,2023-04-30,2023-01-01,2023-12-31,2023-03-24,2023-04-07,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,1,0,,03 Aries,2023-11-22 03:45:21.724917,,31st March 2023 (Friday),
+2023-11-22,20231122,2023-11-22,22.11.2023,11/22/2023,22.11,11-22,22 Nov 2023,22 November 2023,3,4th,1,0,0,0,0,0,Wednesday,Wed,22,22,22nd,53,326,47,47,47,2023-11-20 - 2023-11-26,2023/47,11,11,2023-11,November,Nov,4,2023 4,2023,23,23,365,2023-11-23,2023-11-21,1423,204,47,17,4,2023-11-20,2023-11-26,2023-11-01,2023-11-30,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-15,2023-11-29,2023-10-22,2023-12-22,2023-08-22,2024-02-22,2022-11-22,2024-11-22,1,0,,11 Sagittarius,2023-11-22 03:45:22.312390,,22nd November 2023 (Wednesday),
+2023-12-01,20231201,2023-12-01,01.12.2023,12/01/2023,01.12,12-01,01 Dec 2023,01 December 2023,5,6th,1,0,0,0,0,0,Friday,Fri,1,01,1st,62,335,48,48,48,2023-11-27 - 2023-12-03,2023/48,12,12,2023-12,December,Dec,4,2023 4,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,17,4,2023-11-27,2023-12-03,2023-12-01,2023-12-31,2023-10-01,2024-01-31,2023-01-01,2023-12-31,2023-11-24,2023-12-08,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,1,0,,11 Sagittarius,2023-11-22 03:45:22.332508,,1st December 2023 (Friday),
+2024-01-01,20240101,2024-01-01,01.01.2024,01/01/2024,01.01,01-01,01 Jan 2024,01 January 2024,1,2nd,1,0,0,0,0,0,Monday,Mon,1,01,1st,1,1,1,1,1,2024-01-01 - 2024-01-07,2024/01,1,01,2024-01,January,Jan,1,2024 1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,18,5,2024-01-01,2024-01-07,2024-01-01,2024-01-31,2024-01-01,2024-04-30,2024-01-01,2024-12-31,2023-12-25,2024-01-08,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,0,1,New Year Day,12 Capricorn,2023-11-22 03:45:22.407701,,1st January 2024 (Monday),
  */
 
 -- NEXT: calendar_hours presented in separated sql file
