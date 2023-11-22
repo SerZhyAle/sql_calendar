@@ -112,16 +112,16 @@ CREATE TABLE calendar_dates_swap
     UNIQUE KEY unique_key_calendar_date (date)
 ) DEFAULT CHARSET = latin1 COMMENT ='Calendar dates';
 
-CREATE UNIQUE INDEX uniq_index_calendar_date8
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date8
     ON calendar_dates_swap (date8);
 
-CREATE INDEX index_calendar_week_num_since_2020
+CREATE INDEX index_calendar_dates_week_num_since_2020
     ON calendar_dates_swap (week_num_since_2020);
 
-CREATE INDEX index_calendar_year_month2
+CREATE INDEX index_calendar_dates_year_month2
     ON calendar_dates_swap (year_month2);
 
-CREATE INDEX index_calendar_year_quarter
+CREATE INDEX index_calendar_dates_year_quarter
     ON calendar_dates_swap (year_quarter);
 /*
  -- _________________________________________________________________ --

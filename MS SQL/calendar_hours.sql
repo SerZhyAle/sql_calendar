@@ -36,8 +36,9 @@ select (cast('2023-06-01' as datetime) at time zone 'UTC') at time zone 'Central
 
   run one by one..
  */
--- ALTER TABLE [calendar_hours_swap]  DROP CONSTRAINT IF EXISTS [DF_calendar_hours_created];
--- ALTER TABLE [calendar_hours]  DROP CONSTRAINT IF EXISTS [DF_calendar_hours_created];
+
+-- in case it was created before:
+-- ALTER TABLE [calendar_hours] DROP CONSTRAINT IF EXISTS [DF_calendar_hours_created];
 
 DROP TABLE IF EXISTS calendar_hours_swap;
 
@@ -58,8 +59,8 @@ CREATE TABLE calendar_hours_swap
     date_cet              date         NOT NULL,          -- 'CET date YYYY-MM-DD -date'
     year_month2           char(7)      NOT NULL,          -- 'Year - Month2 UTC YYYY-MM -char(7)'
     year_month2_cet       char(7)      NOT NULL,          -- 'Year - Month2 CET YYYY-MM -char(7)'
-    first_second          datetime2(6) NOT NULL,          -- 'first second -datetime(6)'
-    last_second           datetime2(6) NOT NULL,          -- 'last second -datetime(6)'
+    first_second          datetime2(6) NOT NULL,          -- 'first second -datetime2(6)'
+    last_second           datetime2(6) NOT NULL,          -- 'last second -datetime2(6)'
     hour2                 char(2)      NOT NULL,          -- 'Hour UTC -char(2)'
     hour2_cet             char(2)      NOT NULL,          -- 'Hour CET -char(2)'
     dd_hh                 char(5)      NOT NULL,          -- 'DD.hh -char(5)'
@@ -92,7 +93,7 @@ CREATE TABLE calendar_hours_swap
     -- row activity fields
     created_at            datetime2(6) NOT NULL
         CONSTRAINT df_calendar_hours_created DEFAULT (SYSDATETIME()),
-    updated_at            datetime2(6) NULL DEFAULT NULL, -- 'Updated -datetime(6)'
+    updated_at            datetime2(6) NULL DEFAULT NULL, -- 'Updated -datetime2(6)'
 
     -- common fields
     fullname              varchar(255) NOT NULL,          -- 'DD MMMM YYYY (DayName) -varchar(255)'
@@ -101,24 +102,21 @@ CREATE TABLE calendar_hours_swap
 ) -- 'Hours of calendar dates';
 
 CREATE UNIQUE INDEX uniq_index_calendar_hours_date_hour
-    ON calendar_hours_swap (date_hour)
+    ON calendar_hours_swap (date_hour);
 
-CREATE INDEX index__calendar_hours_date_hour_cet
-    ON calendar_hours_swap (date_hour_cet)
+CREATE INDEX index_calendar_hours_date_hour_cet
+    ON calendar_hours_swap (date_hour_cet);
 
 CREATE INDEX index_calendar_hours_date
-    ON calendar_hours_swap (date)
+    ON calendar_hours_swap (date);
 
 CREATE INDEX index_calendar_hours_year_month2
-    ON calendar_hours_swap (year_month2)
+    ON calendar_hours_swap (year_month2);
 
 CREATE INDEX index_calendar_hours_year_month2_cet
     ON calendar_hours_swap (year_month2_cet)
 
-CREATE INDEX i_hours_year_month2_cet
-    ON calendar_hours_swap (year_month2_cet);
-
-CREATE INDEX i_hours_10
+CREATE INDEX index_calendar_hours_date_hour10
     ON calendar_hours_swap (date_hour10);
 
 /*
@@ -141,19 +139,20 @@ DECLARE
     SET @hour_cursor = 0;
     SET @hour2 = 'XX';
     SET @dd = (SELECT MAX(date) AS md
-               FROM calendar_dates)
+               FROM calendar_dates);
+
     WHILE @day_cursor <= @dd BEGIN
 
-        SET @last_day_of_week = (SELECT is_last_day_of_week FROM calendar_dates WHERE date = @day_cursor)
-        SET @last_day_of_month = (SELECT is_last_day_of_month FROM calendar_dates WHERE date = @day_cursor)
-        SET @last_day_of_period = (SELECT is_last_day_of_quarter FROM calendar_dates WHERE date = @day_cursor)
-        SET @last_day_of_year = (SELECT is_last_day_of_year FROM calendar_dates WHERE date = @day_cursor)
-        SET @is_public_holiday = (SELECT is_public_holiday FROM calendar_dates WHERE date = @day_cursor)
+        SET @last_day_of_week = (SELECT is_last_day_of_week FROM calendar_dates WHERE date = @day_cursor);
+        SET @last_day_of_month = (SELECT is_last_day_of_month FROM calendar_dates WHERE date = @day_cursor);
+        SET @last_day_of_period = (SELECT is_last_day_of_quarter FROM calendar_dates WHERE date = @day_cursor);
+        SET @last_day_of_year = (SELECT is_last_day_of_year FROM calendar_dates WHERE date = @day_cursor);
+        SET @is_public_holiday = (SELECT is_public_holiday FROM calendar_dates WHERE date = @day_cursor);
 
         SET @is_working_day =
                 (SELECT IIF((is_weekend = 0 AND is_public_holiday = 0), 1, 0) AS is_working_day
                  FROM calendar_dates
-                 WHERE date = @day_cursor)
+                 WHERE date = @day_cursor);
 
         SET @hour_cursor = 0;
 
@@ -161,7 +160,7 @@ DECLARE
             IF @hour_cursor < 10
                 SET @hour2 = CONCAT('0', @hour_cursor);
             ELSE
-                SET @hour2 = @hour_cursor
+                SET @hour2 = @hour_cursor;
 
             SET @calculated_date_hour = CONCAT(@day_cursor, ' ', @hour2);
             SET @first_sec = CONCAT(@calculated_date_hour, ':00:00');
@@ -236,7 +235,7 @@ DECLARE
                     RIGHT(@calculated_date_hour, 11),
                     RIGHT(CONCAT(FORMAT(@day_cursor, 'yyMMdd'), @hour2), 8),
                     RIGHT(@day_cursor, 8),
-                    SUBSTRING(@cet_char, 3, 11),
+                    right(LEFT(@cet, 13), 11),
                     RIGHT(@date_cet, 8),
                     SUBSTRING(CAST(@day_cursor AS varchar(10)), 3, 5),
                     SUBSTRING(@cet_char, 3, 5));
@@ -248,8 +247,10 @@ DECLARE
     END;
 
     BEGIN TRANSACTION calendar_hours
-    DROP TABLE IF EXISTS calendar_hours
+    DROP TABLE IF EXISTS calendar_hours;
+
     EXEC sp_rename 'calendar_hours_swap', 'calendar_hours';
+
     COMMIT TRANSACTION calendar_hours;
 
 GO;
@@ -277,14 +278,19 @@ EXEC service_calendar_hours_population;
   SELECT (COUNT(*)/24)/356 as y FROM calendar_hours;
   -- 17
 
-#check..
+-- check..
+
 SELECT *
 FROM calendar_hours
 WHERE date IN (cast(getdate() as date), '2023.12.01', '2022-12-31')
 ORDER BY date_hour;
 
- */
+-- 72 rows and first line of result:
 
+date_hour,date_hour10,date,hour,hour_cet,date_hour_cet,date_cet,year_month2,year_month2_cet,first_second,last_second,hour2,hour2_cet,dd_hh,is_last_in_week,is_last_in_month,is_last_in_quarter,is_last_in_year,is_lunch_hour,is_night,is_morning,is_daylight,is_evening,is_working_hour,is_working_day,is_public_holiday,special_hour,date_hour_short,date_hour8,date_short,date_hour_cet_short,date_cet_short,year_month2_short,year_month2_cet_short,created_at,updated_at,fullname,description
+2022-12-31 00,2022123100,2022-12-31,0,1,2022-12-31 01,2022-12-31,2022-12,2022-12,2022-12-31 00:00:00.000000,2022-12-31 00:59:59.999999,00,  ,3100 ,false,false,false,false,false,true,false,false,false,false,false,false,,22-12-31 00,22123100,22-12-31,22-12-31 01,22-12-31,22-12,22-12,2023-11-22 15:45:47.990788,,2022-12-31 00 UTC,
+
+ */
 -- _________________________________________________________________ --
 
 /*
@@ -365,16 +371,16 @@ INSERT INTO calendar_hours_cet_short(date_hour, date_cet, hour_cet, date_hour_ce
 SELECT date_hour, date_cet, hour_cet, date_hour_cet, year_month2_cet
 FROM calendar_hours AS hours;
 
-CREATE INDEX index_calendar_hours_short_date
+CREATE INDEX index_calendar_hours_cet_short_date_cet
     ON calendar_hours_cet_short (date_cet);
 
-CREATE INDEX index_calendar_hours_short_date_hour_cet
+CREATE INDEX index_calendar_hours_cet_short_date_hour_cet
     ON calendar_hours_cet_short (date_hour_cet);
 
-CREATE INDEX index_calendar_hours_short_hour_cet
+CREATE INDEX index_calendar_hours_cet_short_hour_cet
     ON calendar_hours_cet_short (hour_cet);
 
-CREATE INDEX index_calendar_hours_short_date_year_month2_cet
+CREATE INDEX index_calendar_hours_cet_short_year_month2_cet
     ON calendar_hours_cet_short (year_month2_cet);
 
 SELECT *
@@ -425,17 +431,22 @@ SELECT date_hour10,
        hour_cet
 FROM calendar_hours AS hours;
 
-CREATE INDEX index_calendar_hours_short_date
+CREATE INDEX index_calendar_hours10_short_date_hour10
     ON calendar_hours10_short (date_hour10);
 
-CREATE INDEX index_calendar_hours_short_date_hour_cet
+CREATE INDEX index_calendar_hours10_short_date_hour_cet
     ON calendar_hours10_short (date_hour_cet);
 
-CREATE INDEX index_calendar_hours_short_hour_cet
+CREATE INDEX index_calendar_hours10_short_date_hour
     ON calendar_hours10_short (date_hour);
 
 SELECT *
 FROM calendar_hours10_short;
+/*
+ first line:
+date_hour10,date_hour,date_hour_cet,year_month2,hour,hour_cet,date,date_hour_cet_short,date_cet
+2019123100,2019-12-31 00,2019-12-31 01,2019-12,0,1,2019-12-31,19-12-31   ,2019-12-31
+ */
 
 -- NEXT: calendar_weeks, calendar_months, calendar_years presented in separated sql files
 

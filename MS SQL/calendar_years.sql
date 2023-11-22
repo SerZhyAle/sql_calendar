@@ -31,7 +31,7 @@ SELECT last_day_of_year.year,
 FROM calendar_dates AS last_day_of_year
     LEFT JOIN (SELECT year,
                       SUM(IIF(is_weekday = 1, 1, 0))           AS weekdays,
-                      SUM(IIF(is_weekend = 1, 2, 0))           AS weekends,
+                      SUM(IIF(is_weekend = 1, 1, 0))           AS weekends,
                       SUM(IIF(special_date IS NOT NULL, 1, 0)) AS special_days,
                       SUM(IIF(is_working_day = 1, 1, 0))       AS working_days
                FROM calendar_dates

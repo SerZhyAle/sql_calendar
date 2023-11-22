@@ -20,9 +20,8 @@
 
  run one by one..
  */
--- ALTER TABLE calendar_dates_swap DROP CONSTRAINT if EXISTS DF_calendar_dates_created;
--- ALTER TABLE calendar_dates DROP CONSTRAINT if EXISTS DF_calendar_dates_created;
-DROP TABLE IF EXISTS calendar_dates_swap;
+
+DROP TABLE IF EXISTS calendar_dates_swap CASCADE ;
 
 CREATE TABLE calendar_dates_swap
 (
@@ -43,37 +42,37 @@ CREATE TABLE calendar_dates_swap
     day_of_week            smallint
         CHECK (day_of_week >= 0)        NOT NULL, -- 'Day Number in Week 0=sunday -smallint'
     day_of_week_char       varchar(5)   NOT NULL, -- 'Name of Number of Day in Week -varchar(5)'
-    is_weekday             boolean      NOT NULL, -- 'True if NOT Saturday and NOT Sunday -bit'
-    is_weekend             boolean      NOT NULL, -- 'True if Saturday or Sunday -bit'
-    is_last_day_of_week    boolean      NOT NULL, -- 'True if Sunday -bit'
-    is_last_day_of_month   boolean      NOT NULL, -- 'True if last day of month -bit'
-    is_last_day_of_quarter boolean      NOT NULL, -- 'True if last day of quarter -bit'
-    is_last_day_of_year    boolean      NOT NULL, -- 'True if last day of year -bit'
+    is_weekday             boolean      NOT NULL, -- 'True if NOT Saturday and NOT Sunday -boolean'
+    is_weekend             boolean      NOT NULL, -- 'True if Saturday or Sunday -boolean'
+    is_last_day_of_week    boolean      NOT NULL, -- 'True if Sunday -boolean'
+    is_last_day_of_month   boolean      NOT NULL, -- 'True if last day of month -boolean'
+    is_last_day_of_quarter boolean      NOT NULL, -- 'True if last day of quarter -boolean'
+    is_last_day_of_year    boolean      NOT NULL, -- 'True if last day of year -boolean'
     day_name               varchar(10)  NOT NULL, -- 'Day Name in Week -varchar(10)'
     day_name3              char(3)      NOT NULL, -- 'Day Name in Week -char(3)'
     day_of_month           smallint
-        CHECK (day_of_month > 0)        NOT NULL, -- 'Day Number in Month -tinyint'
+        CHECK (day_of_month > 0)        NOT NULL, -- 'Day Number in Month -smallint'
     day_of_month2          char(2)      NOT NULL, -- 'Day Number in Month (0 leads) -char(2)'
     day_of_month_char      varchar(5)   NOT NULL, -- 'Name of Number of Day in Month -varchar(5)'
-    day_of_quarter         smallint     NOT NULL, -- 'Day Number in Quarter -tinyint'
+    day_of_quarter         smallint     NOT NULL, -- 'Day Number in Quarter -smallint'
     day_of_year            smallint
         CHECK (day_of_year > 0)         NOT NULL, -- 'Day Number in Year -smallint'
     week                   smallint     NOT NULL, -- 'Week Number in Year (first day-monday) -tinyint'
     week2                  char(2)      NOT NULL, -- 'Week Number in Year (first day-monday) -char(2)'
     week_finance           smallint     NOT NULL, -- 'Week Number (finance) -tinyint'
-    week_fullname          char(23)     NOT NULL, -- 'Week YYYY-MM-DD - YYYY-MM-DD fullname -char(23)'
+    week_fullname          varchar(23)     NOT NULL, -- 'Week YYYY-MM-DD - YYYY-MM-DD fullname -varchar(23)'
     year_week              char(7)      NOT NULL, -- 'Year Week YYYY/WW -char(7)'
-    month                  smallint     NOT NULL, -- 'Month Number in Year -tinyint'
+    month                  smallint     NOT NULL, -- 'Month Number in Year -smallint'
     month2                 char(2)      NOT NULL, -- 'Month Number in Year (0 leads) -char(2)'
     year_month2            char(7)      NOT NULL, -- 'Year - Month2 YYYY-MM -char(7)'
     month_name             varchar(10)  NOT NULL, -- 'Month Name -varchar(10)'
     month_name3            char(3)      NOT NULL, -- 'Month Name -char(3)'
     quarter                smallint
-        CHECK (quarter > 0)             NOT NULL, -- 'Quarter Number in Year -tinyint'
+        CHECK (quarter > 0)             NOT NULL, -- 'Quarter Number in Year -smallint'
     year_quarter           char(6)      NOT NULL, -- 'Year quarter YYYY Q -char(6)'
     year                   smallint     NOT NULL, -- 'Year -smallint'
     year2                  smallint
-        CHECK (year2 > 0)               NOT NULL, -- 'Year last 2 figures -tinyint'
+        CHECK (year2 > 0)               NOT NULL, -- 'Year last 2 figures -smallint'
     year2c                 char(2)      NOT NULL, -- 'Year last 2 chars -char(2)'
     days_in_year           smallint
         CHECK (days_in_year > 0)        NOT NULL
@@ -85,8 +84,8 @@ CREATE TABLE calendar_dates_swap
     day_num_since_2020     int          NOT NULL, -- 'Day number since 2020-01-01 for order -int'
     week_num_since_2020    int          NOT NULL, -- 'Week number since 2020-01-01 for order -int'
     month_num_since_2020   int          NOT NULL, -- 'Month number since 2020-01-01 for order -int'
-    quarter_num_since_2020 smallint     NOT NULL, -- 'Quarter number since 2020-01-01 for order -tinyint'
-    year_num_since_2020    smallint     NOT NULL, -- 'Year number since 2020-01-01 for order -tinyint'
+    quarter_num_since_2020 smallint     NOT NULL, -- 'Quarter number since 2020-01-01 for order -smallint'
+    year_num_since_2020    smallint     NOT NULL, -- 'Year number since 2020-01-01 for order -smallint'
 
     week_begin             date         NOT NULL, -- 'Date of begin of this week -date'
     week_end               date         NOT NULL, -- 'Date of end of this week -date'
@@ -106,11 +105,10 @@ CREATE TABLE calendar_dates_swap
     year_before            date         NOT NULL, -- 'Same date next year -date'
     year_after             date         NOT NULL, -- 'Same date prev year -date'
 
-    is_working_day         boolean      NOT NULL, -- 'Day is working in Sweden not special -tiny(int)'
-    is_public_holiday      boolean      NOT NULL, -- 'Is public holiday -tiny(int)'
+    is_working_day         boolean      NOT NULL, -- 'Day is working in Sweden not special -boolean'
+    is_public_holiday      boolean      NOT NULL, -- 'Is public holiday -boolean'
     special_date           varchar(255) NULL
         DEFAULT NULL,                             -- 'Special note for date -varchar(255)'
-
     zodiac                 varchar(50)  NOT NULL, -- 'Zodiac sign -varchar(50)'
 
     -- row activity fields
@@ -118,7 +116,7 @@ CREATE TABLE calendar_dates_swap
         CONSTRAINT df_calendar_dates_created
         DEFAULT (NOW()),
     updated_at             timestamp(6) NULL
-        DEFAULT NULL,                             -- 'Updated -datetime(6)'
+        DEFAULT NULL,                             -- 'Updated -timestamp(6)'
 
     -- common fields
     fullname               varchar(255) NOT NULL, -- 'DD MMMM YYYY (DayName) -varchar(255)'
@@ -126,19 +124,19 @@ CREATE TABLE calendar_dates_swap
         DEFAULT NULL                              -- ', -- ary for the calendar date -varchar(1000)'
 );
 
-CREATE UNIQUE INDEX uniq_index_calendar_date
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date
     ON calendar_dates_swap (date);
 
-CREATE UNIQUE INDEX uniq_index_calendar_date8
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date8
     ON calendar_dates_swap (date8);
 
-CREATE INDEX index_calendar_week_num_since_2020
+CREATE INDEX index_calendar_dates_week_num_since_2020
     ON calendar_dates_swap (week_num_since_2020);
 
-CREATE INDEX index_calendar_year_month2
+CREATE INDEX index_calendar_dates_year_month2
     ON calendar_dates_swap (year_month2);
 
-CREATE INDEX index_calendar_year_quarter
+CREATE INDEX index_calendar_dates_year_quarter
     ON calendar_dates_swap (year_quarter);
 
 /*
@@ -378,7 +376,7 @@ BEGIN
                     TO_CHAR(day_date, 'IW')::int,
                     CONCAT(EXTRACT(YEAR FROM day_cursor), '/', RIGHT(CONCAT('0', number_of_calendar_week), 2)),
                     cur_mon_n,
-                    TO_CHAR(day_date, 'MM')::int,
+                    TO_CHAR(day_date, 'MM'),
                     TO_CHAR(day_date, 'Month'),
                     TO_CHAR(day_date, 'Mon'),
                     quarter,
@@ -460,7 +458,7 @@ BEGIN
             day_num_since_2020 = day_num_since_2020 + 1;
         END LOOP;
 
-    DROP TABLE IF EXISTS calendar_dates;
+    DROP TABLE IF EXISTS calendar_dates CASCADE;
     ALTER TABLE calendar_dates_swap
         RENAME TO calendar_dates;
     COMMIT;
@@ -501,12 +499,12 @@ ORDER BY date;
 result:
 
 date,date8,date_ymd,date_dmy,date_mdy,date_ddmm,date_mmdd,date_dmmmy,date_dmmmmy,day_of_week,day_of_week_char,is_weekday,is_weekend,is_last_day_of_week,is_last_day_of_month,is_last_day_of_quarter,is_last_day_of_year,day_name,day_name3,day_of_month,day_of_month2,day_of_month_char,day_of_quarter,day_of_year,week,week2,week_finance,week_fullname,year_week,month,month2,year_month2,month_name,month_name3,quarter,year_quarter,year,year2,year2c,days_in_year,next_date,prev_date,day_num_since_2020,week_num_since_2020,month_num_since_2020,quarter_num_since_2020,year_num_since_2020,week_begin,week_end,month_begin,month_end,quarter_begin,quarter_end,year_begin,year_end,week_before,week_after,month_before,month_after,quarter_before,quarter_after,year_before,year_after,is_working_day,is_public_holiday,special_date,zodiac,created_at,updated_at,fullname,description
-2022-12-31,20221231,2022-12-31,31.12.2022,12/31/2022,31.12,12-31,7 DEC 22   ,7 December  22,6,7th,false,true,false,true,true,true,Saturday ,SAT,31,31,31st,92,365,52,52,52,23-01-07 - 23-01-01    ,2022/52,12,12,2022-12,December ,Dec,4,2022 4,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,13,3,2022-12-26,2023-01-01,2022-12-01,2022-12-31,2022-10-01,2022-12-31,2022-01-01,2022-12-31,2022-12-24,2023-01-07,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,false,false,,12 Capricorn,2023-11-22 02:54:49.538849,,31 December  2022 (53),
-2023-02-25,20230225,2023-02-25,25.02.2023,02/25/2023,25.02,02-25,7 FEB 23   ,7 February  23,6,7th,false,true,false,false,false,false,Saturday ,SAT,25,25,25th,56,56,8,08,8,23-03-04 - 23-02-26    ,2023/08,2,2 ,2023-02,February ,Feb,1,2023 1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,14,4,2023-02-20,2023-02-26,2023-02-01,2023-02-28,2023-01-01,2023-03-31,2023-01-01,2023-12-31,2023-02-18,2023-03-04,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,false,false,,02 Pisces,2023-11-22 02:54:49.538849,,25 February  2023 (08),
-2023-03-31,20230331,2023-03-31,31.03.2023,03/31/2023,31.03,03-31,6 MAR 23   ,6 March     23,5,6th,true,false,false,true,true,false,Friday   ,FRI,31,31,31st,90,90,13,13,13,23-04-06 - 23-04-02    ,2023/13,3,3 ,2023-03,March    ,Mar,1,2023 1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,14,4,2023-03-27,2023-04-02,2023-03-01,2023-03-31,2023-01-01,2023-03-31,2023-01-01,2023-12-31,2023-03-24,2023-04-07,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,true,false,,03 Aries,2023-11-22 02:54:49.538849,,31 March     2023 (13),
-2023-11-22,20231122,2023-11-22,22.11.2023,11/22/2023,22.11,11-22,4 NOV 23   ,4 November  23,3,4th,true,false,false,false,false,false,Wednesday,WED,22,22,22nd,53,326,47,47,47,23-11-26 - 23-11-26    ,2023/47,11,11,2023-11,November ,Nov,4,2023 4,2023,23,23,365,2023-11-23,2023-11-21,1423,204,47,17,4,2023-11-20,2023-11-26,2023-11-01,2023-11-30,2023-10-01,2023-12-31,2023-01-01,2023-12-31,2023-11-15,2023-11-29,2023-10-22,2023-12-22,2023-08-22,2024-02-22,2022-11-22,2024-11-22,true,false,,11 Sagittarius,2023-11-22 02:54:49.538849,,22 November  2023 (47),
-2023-12-01,20231201,2023-12-01,01.12.2023,12/01/2023,01.12,12-01,6 DEC 23   ,6 December  23,5,6th,true,false,false,false,false,false,Friday   ,FRI,1,01,1st,62,335,48,48,48,23-12-07 - 23-12-03    ,2023/48,12,12,2023-12,December ,Dec,4,2023 4,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,17,4,2023-11-27,2023-12-03,2023-12-01,2023-12-31,2023-10-01,2023-12-31,2023-01-01,2023-12-31,2023-11-24,2023-12-08,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,true,false,,11 Sagittarius,2023-11-22 02:54:49.538849,,01 December  2023 (48),
-2024-01-01,20240101,2024-01-01,01.01.2024,01/01/2024,01.01,01-01,2 JAN 24   ,2 January   24,1,2nd,true,false,false,false,false,false,Monday   ,MON,1,01,1st,1,1,1,01,1,24-01-03 - 24-01-07    ,2024/01,1,1 ,2024-01,January  ,Jan,1,2024 1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,18,5,2024-01-01,2024-01-07,2024-01-01,2024-01-31,2024-01-01,2024-03-31,2024-01-01,2024-12-31,2023-12-25,2024-01-08,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,false,true,New Year Day,12 Capricorn,2023-11-22 02:54:49.538849,,01 January   2024 (01),
+2022-12-31,20221231,2022-12-31,31.12.2022,12/31/2022,31.12,12-31,7 DEC 22   ,7 December  22,6,7th,false,true,false,true,true,true,Saturday ,SAT,31,31,31st,92,365,52,52,52,23-01-07 - 23-01-01    ,2022/52,12,12,2022-12,December ,Dec,4,2022 4,2022,22,22,365,2023-01-01,2022-12-30,1097,157,36,13,3,2022-12-26,2023-01-01,2022-12-01,2022-12-31,2022-10-01,2022-12-31,2022-01-01,2022-12-31,2022-12-24,2023-01-07,2022-11-30,2023-01-31,2022-09-30,2023-03-31,2021-12-31,2023-12-31,false,false,,12 Capricorn,2023-11-22 14:26:31.334021,,31 December  2022 (53),
+2023-02-25,20230225,2023-02-25,25.02.2023,02/25/2023,25.02,02-25,7 FEB 23   ,7 February  23,6,7th,false,true,false,false,false,false,Saturday ,SAT,25,25,25th,56,56,8,08,8,23-03-04 - 23-02-26    ,2023/08,2,2 ,2023-02,February ,Feb,1,2023 1,2023,23,23,365,2023-02-26,2023-02-24,1153,165,38,14,4,2023-02-20,2023-02-26,2023-02-01,2023-02-28,2023-01-01,2023-03-31,2023-01-01,2023-12-31,2023-02-18,2023-03-04,2023-01-25,2023-03-25,2022-11-25,2023-05-25,2022-02-25,2024-02-25,false,false,,02 Pisces,2023-11-22 14:26:31.334021,,25 February  2023 (08),
+2023-03-31,20230331,2023-03-31,31.03.2023,03/31/2023,31.03,03-31,6 MAR 23   ,6 March     23,5,6th,true,false,false,true,true,false,Friday   ,FRI,31,31,31st,90,90,13,13,13,23-04-06 - 23-04-02    ,2023/13,3,3 ,2023-03,March    ,Mar,1,2023 1,2023,23,23,365,2023-04-01,2023-03-30,1187,170,39,14,4,2023-03-27,2023-04-02,2023-03-01,2023-03-31,2023-01-01,2023-03-31,2023-01-01,2023-12-31,2023-03-24,2023-04-07,2023-02-28,2023-04-30,2022-12-31,2023-06-30,2022-03-31,2024-03-31,true,false,,03 Aries,2023-11-22 14:26:31.334021,,31 March     2023 (13),
+2023-11-22,20231122,2023-11-22,22.11.2023,11/22/2023,22.11,11-22,4 NOV 23   ,4 November  23,3,4th,true,false,false,false,false,false,Wednesday,WED,22,22,22nd,53,326,47,47,47,23-11-26 - 23-11-26    ,2023/47,11,11,2023-11,November ,Nov,4,2023 4,2023,23,23,365,2023-11-23,2023-11-21,1423,204,47,17,4,2023-11-20,2023-11-26,2023-11-01,2023-11-30,2023-10-01,2023-12-31,2023-01-01,2023-12-31,2023-11-15,2023-11-29,2023-10-22,2023-12-22,2023-08-22,2024-02-22,2022-11-22,2024-11-22,true,false,,11 Sagittarius,2023-11-22 14:26:31.334021,,22 November  2023 (47),
+2023-12-01,20231201,2023-12-01,01.12.2023,12/01/2023,01.12,12-01,6 DEC 23   ,6 December  23,5,6th,true,false,false,false,false,false,Friday   ,FRI,1,01,1st,62,335,48,48,48,23-12-07 - 23-12-03    ,2023/48,12,12,2023-12,December ,Dec,4,2023 4,2023,23,23,365,2023-12-02,2023-11-30,1432,205,48,17,4,2023-11-27,2023-12-03,2023-12-01,2023-12-31,2023-10-01,2023-12-31,2023-01-01,2023-12-31,2023-11-24,2023-12-08,2023-11-01,2024-01-01,2023-09-01,2024-03-01,2022-12-01,2024-12-01,true,false,,11 Sagittarius,2023-11-22 14:26:31.334021,,01 December  2023 (48),
+2024-01-01,20240101,2024-01-01,01.01.2024,01/01/2024,01.01,01-01,2 JAN 24   ,2 January   24,1,2nd,true,false,false,false,false,false,Monday   ,MON,1,01,1st,1,1,1,01,1,24-01-03 - 24-01-07    ,2024/01,1,1 ,2024-01,January  ,Jan,1,2024 1,2024,24,24,366,2024-01-02,2023-12-31,1463,210,49,18,5,2024-01-01,2024-01-07,2024-01-01,2024-01-31,2024-01-01,2024-03-31,2024-01-01,2024-12-31,2023-12-25,2024-01-08,2023-12-01,2024-02-01,2023-10-01,2024-04-01,2023-01-01,2025-01-01,false,true,New Year Day,12 Capricorn,2023-11-22 14:26:31.334021,,01 January   2024 (01),
  */
 
 -- NEXT: calendar_hours presented in separated sql file

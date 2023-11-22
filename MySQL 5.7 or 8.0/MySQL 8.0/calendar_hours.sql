@@ -95,16 +95,15 @@ CREATE TABLE calendar_hours_swap
     description           varchar(1000)             DEFAULT NULL COMMENT 'Commentary for hour of date -varchar(1000)',
 
     UNIQUE INDEX uniq_index_calendar_hours_date_hour (date_hour),
-    INDEX index__calendar_hours_date_hour_cet (date_hour_cet),
+    INDEX index_calendar_hours_date_hour_cet (date_hour_cet),
     INDEX index_calendar_hours_date (date),
-    INDEX index_calendar_hours_year_month2 (year_month2),
-    INDEX index_calendar_hours_year_month2_cet (year_month2_cet)
+    INDEX index_calendar_hours_year_month2 (year_month2)
 ) COMMENT = 'Hours of calendar dates';
 
-CREATE INDEX i_hours_year_month2_cet
+CREATE INDEX index_calendar_hours_year_month2_cet
     ON calendar_hours_swap (year_month2_cet);
 
-CREATE INDEX i_hours_10
+CREATE INDEX index_calendar_hours_date_hour10
     ON calendar_hours_swap (date_hour10);
 
 /*
@@ -374,13 +373,16 @@ FROM calendar_hours
 WHERE date IN (CURRENT_DATE, '2023.12.01', '2022-12-31')
 ORDER BY date_hour;
 
- */
+   first line:
+date_hour,date_hour10,date,hour,hour_cet,date_hour_cet,date_cet,year_month2,year_month2_cet,first_second,last_second,hour2,hour2_cet,dd_hh,is_last_in_week,is_last_in_month,is_last_in_quarter,is_last_in_year,is_lunch_hour,is_night,is_morning,is_daylight,is_evening,is_working_hour,is_working_day,is_public_holiday,special_hour,date_hour_short,date_hour8,date_short,date_hour_cet_short,date_cet_short,year_month2_short,year_month2_cet_short,created_at,updated_at,fullname,description
+2022-12-31 00,2022123100,2022-12-31,0,1,2022-12-31 01,2022-12-31,2022-12,2022-12,2022-12-31 00:00:00.000000,2022-12-31 00:59:59.999999,00,01,31.00,0,0,0,0,0,1,0,0,0,0,0,0,,22-12-31 00,22123100,22-12-31,22-12-31 01,22-12-31,22-12,22-12,2023-11-20 20:56:35.756567,,2022-12-31 00 UTC,
 
+ */
 -- _________________________________________________________________ --
 
 /*
  The next tables is optional.
- 
+
  This is short indexed versions of the calendar_hours
  If you use date_hour or date_hour10 as a dimension for the data, next tables will be better to use for joins for big data selections:
 
@@ -428,7 +430,11 @@ CREATE INDEX index_calendar_hours_short_year_month2
 
 SELECT *
 FROM calendar_hours_short;
-
+/*
+first line:
+date_hour,date,year_month2,hour
+2019-12-31 00,2019-12-31,2019-12,0
+ */
 
 -- _________________________________________________________________ --
 /* short version to gain CET hour/date/year from data's UTC original hour
@@ -461,20 +467,25 @@ SELECT date_hour,
        year_month2_cet
 FROM calendar_hours AS hours;
 
-CREATE INDEX index_calendar_hours_short_date
+CREATE INDEX index_calendar_hours_cet_short_date_cet
     ON calendar_hours_cet_short (date_cet);
 
-CREATE INDEX index_calendar_hours_short_date_hour_cet
+CREATE INDEX index_calendar_hours_cet_short_date_hour_cet
     ON calendar_hours_cet_short (date_hour_cet);
 
-CREATE INDEX index_calendar_hours_short_hour_cet
+CREATE INDEX index_calendar_hours_cet_short_hour_cet
     ON calendar_hours_cet_short (hour_cet);
 
-CREATE INDEX index_calendar_hours_short_date_year_month2_cet
+CREATE INDEX index_calendar_hours_cet_short_year_month2_cet
     ON calendar_hours_cet_short (year_month2_cet);
 
 SELECT *
 FROM calendar_hours_cet_short;
+/*
+ first line:
+date_hour,date_hour_cet,year_month2_cet,date_cet,hour_cet
+2019-12-31 00,2019-12-31 01,2019-12,2019-12-31,1
+ */
 
 -- _________________________________________________________________ --
 /* short version for hour presented as int(10) like 202311600 ('2023-11-16 00')
@@ -517,20 +528,25 @@ SELECT date_hour10,
        hour_cet
 FROM calendar_hours AS hours;
 
-CREATE INDEX index_calendar_hours_short_date
+CREATE INDEX index_calendar_hours10_short_date_hour10
     ON calendar_hours10_short (date_hour10);
 
-CREATE INDEX index_calendar_hours_short_date_hour_cet
+CREATE INDEX index_calendar_hours10_short_date_hour_cet
     ON calendar_hours10_short (date_hour_cet);
 
-CREATE INDEX index_calendar_hours_short_hour_cet
+CREATE INDEX index_calendar_hours10_short_date_hour
     ON calendar_hours10_short (date_hour);
 
 SELECT *
 FROM calendar_hours10_short;
+/*
+first line:
+date_hour10,date_hour,date_hour_cet,year_month2,hour,hour_cet,date,date_hour_cet_short,date_cet
+2019123100,2019-12-31 00,2019-12-31 01,2019-12,0,1,2019-12-31,19-12-31 01,2019-12-31
 
--- NEXT: calendar_weeks, calendar_months, calendar_years presented in separated sql files
+ NEXT: calendar_weeks, calendar_months, calendar_years presented in separated sql files
 
+ */
 /*
  sza(c)
  */

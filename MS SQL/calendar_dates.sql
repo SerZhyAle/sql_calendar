@@ -127,19 +127,19 @@ CREATE TABLE calendar_dates_swap
         DEFAULT NULL                              -- ', -- ary for the calendar date -varchar(1000)'
 )
 
-CREATE UNIQUE INDEX uniq_index_calendar_date
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date
     ON calendar_dates_swap (date)
 
-CREATE UNIQUE INDEX uniq_index_calendar_date8
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date8
     ON calendar_dates_swap (date8)
 
-CREATE INDEX index_calendar_week_num_since_2020
+CREATE INDEX index_calendar_dates_week_num_since_2020
     ON calendar_dates_swap (week_num_since_2020)
 
-CREATE INDEX index_calendar_year_month2
+CREATE INDEX index_calendar_dates_year_month2
     ON calendar_dates_swap (year_month2)
 
-CREATE INDEX index_calendar_year_quarter
+CREATE INDEX index_calendar_dates_year_quarter
     ON calendar_dates_swap (year_quarter);
 
 /*
@@ -460,8 +460,10 @@ DECLARE
     END;
 
     BEGIN TRANSACTION calendar_dates
-    DROP TABLE IF EXISTS calendar_dates
+    DROP TABLE IF EXISTS calendar_dates;
+
     EXEC sp_rename 'calendar_dates_swap', 'calendar_dates'
+
     COMMIT TRANSACTION calendar_dates
 
 GO

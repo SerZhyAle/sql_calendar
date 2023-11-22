@@ -112,25 +112,25 @@ CREATE TABLE calendar_dates_swap
     UNIQUE KEY unique_key_calendar_date (date)
 ) DEFAULT CHARSET = latin1 COMMENT ='Calendar dates';
 
-CREATE UNIQUE INDEX uniq_index_calendar_date8
+CREATE UNIQUE INDEX uniq_index_calendar_dates_date8
     ON calendar_dates_swap (date8);
 
-CREATE INDEX index_calendar_week_num_since_2020
+CREATE INDEX index_calendar_dates_week_num_since_2020
     ON calendar_dates_swap (week_num_since_2020);
 
-CREATE INDEX index_calendar_year_month2
+CREATE INDEX index_calendar_dates_year_month2
     ON calendar_dates_swap (year_month2);
 
-CREATE INDEX index_calendar_year_quarter
+CREATE INDEX index_calendar_dates_year_quarter
     ON calendar_dates_swap (year_quarter);
 /*
  -- _________________________________________________________________ --
  STEP 2.
- 
+
  Fill the calendar_dates:
- 
+
  The next procedure stored to fill the calendar:
- 
+
  Attention:
  SET @day_cursor = '2019.12.31'; -- The BEGIN of the Dates
  SET @day_cursor_end = '2036.12.31';  -- The END of the dates. You probably know what is going on later.
