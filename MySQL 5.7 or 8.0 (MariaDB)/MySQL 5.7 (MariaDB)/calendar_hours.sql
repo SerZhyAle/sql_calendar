@@ -33,7 +33,7 @@ See all presented columns with its description below..
 
  In this case we have summer time shift, so we can create the calendar_hours..
 
-   All code here equal for MySQL 5.7 and MySQL 8.0
+   All code here equal for MySQL 5.7 and MySQL 8.0 (MariaDB)
  --
  STEP 1.
  Create the _swap table to be able switch the table in one transaction:

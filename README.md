@@ -1,7 +1,7 @@
 # sql_calendar
 
 ### Physical **Calendar** for 
-## - *MySQL*  
+## - *MySQL (MariaDB)*  
 ## - *Microsoft SQL*  
 ## - *Postgres SQL*  
 ### Hours, Dates, Weeks, Months, Quarters, Years

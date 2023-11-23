@@ -464,7 +464,7 @@ DECLARE
 
     EXEC sp_rename 'calendar_dates_swap', 'calendar_dates'
 
-    COMMIT TRANSACTION calendar_dates
+    COMMIT TRANSACTION calendar_dates;
 
 GO
 

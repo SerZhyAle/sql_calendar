@@ -9,7 +9,7 @@
  year - pointing view calendar_years
 
 
- All code here equal for MySQL 5.7 and MySQL 8.0
+ All code here equal for MySQL 5.7 and MySQL 8.0 (MariaDB)
 
  -- _________________________________________________________________ --
  STEP 1.

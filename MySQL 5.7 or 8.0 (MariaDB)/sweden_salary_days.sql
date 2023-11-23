@@ -4,6 +4,7 @@
  using (updating) the table calendar_dates which should be created and filled, presented in separated file)
  use view calendar_months (should be created, presented in separated file)
 
+ Code for MySQL (MariaDB)
  */
 
 DROP TEMPORARY TABLE IF EXISTS temp_se_salary_days;

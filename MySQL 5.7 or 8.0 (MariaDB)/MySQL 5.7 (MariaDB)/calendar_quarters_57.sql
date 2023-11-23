@@ -1,5 +1,5 @@
 /*
--- next code for MySQL 5.7 and higher:
+-- next code for MySQL 5.7 (MariaDB):
 
  calendar_quarters is a VIEW based on table:
  -- calendar_dates
