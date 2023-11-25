@@ -40,7 +40,7 @@ CREATE TABLE calendar_dates_swap
     "date_dmmmmy"            varchar2(25)      NOT NULL, -- DD Month YYYY -varchar2(25)
     "day_of_week"            number(2, 0)
         CHECK ("day_of_week" >= 0)             NOT NULL, -- Day Number in Week 0=sunday -number(21, 0)
-    "day_of_week_char"       varchar2(10)       NOT NULL, -- Name of Number of Day in Week -varchar2(5)
+    "day_of_week_char"       varchar2(10)      NOT NULL, -- Name of Number of Day in Week -varchar2(5)
     "is_weekday"             number(1)         NOT NULL, -- True if NOT Saturday and NOT Sunday -number(1)
     "is_weekend"             number(1)         NOT NULL, -- True if Saturday or Sunday -number(1)
     "is_last_day_of_week"    number(1)         NOT NULL, -- True if Sunday -number(1)
@@ -147,27 +147,27 @@ CREATE OR REPLACE PROCEDURE service_calendar_dates_population AS
 
     quarter                 number(21, 0) := 4;
     quarter_was             number(21, 0) := 4;
-    day_cursor              date         := TO_DATE('2019.12.31', 'YYYY.MM.DD');
-    number_of_calendar_week smallint     := 53;
-    day_cursor_end          date         := TO_DATE('2036.12.31', 'YYYY.MM.DD');
-    begin_of_period         date         := TO_DATE('2019.10.01', 'YYYY.MM.DD');
-    special                 varchar2(50) := NULL;
-    is_public_holiday       number(1)    := NULL;
-    day_of_period           smallint     := 92;
-    end_of_period           date         := LAST_DAY(ADD_MONTHS(begin_of_period, 3));
-    day_num_since_2020      int          := 0;
-    week_num_since_2020     int          := 1;
-    month_num_since_2020    int          := 0;
-    quarter_num_since_2020  int          := 0;
-    year_num_since_2020     int          := 0;
+    day_cursor              date          := TO_DATE('2019.12.31', 'YYYY.MM.DD');
+    number_of_calendar_week smallint      := 53;
+    day_cursor_end          date          := TO_DATE('2036.12.31', 'YYYY.MM.DD');
+    begin_of_period         date          := TO_DATE('2019.10.01', 'YYYY.MM.DD');
+    special                 varchar2(50)  := NULL;
+    is_public_holiday       number(1)     := NULL;
+    day_of_period           smallint      := 92;
+    end_of_period           date          := LAST_DAY(ADD_MONTHS(begin_of_period, 3));
+    day_num_since_2020      int           := 0;
+    week_num_since_2020     int           := 1;
+    month_num_since_2020    int           := 0;
+    quarter_num_since_2020  int           := 0;
+    year_num_since_2020     int           := 0;
     week_day_number         number(21, 0) := TO_CHAR(day_cursor, 'D') - 1;
-    days_in_the_year        smallint     := 365;
-    is_weekend              number(1)    := 1;
-    is_working_day          number(1)    := 0;
-    day_int                 int          := 31;
-    month_int               int          := 12;
-    day_date                date         := TO_DATE('2019.12.31', 'YYYY.MM.DD');
-    day_tomorrow            date         := TO_DATE('2020.01.01', 'YYYY.MM.DD');
+    days_in_the_year        smallint      := 365;
+    is_weekend              number(1)     := 1;
+    is_working_day          number(1)     := 0;
+    day_int                 int           := 31;
+    month_int               int           := 12;
+    day_date                date          := TO_DATE('2019.12.31', 'YYYY.MM.DD');
+    day_tomorrow            date          := TO_DATE('2020.01.01', 'YYYY.MM.DD');
 
 BEGIN
     -- _________________________________________________________________ --
@@ -325,7 +325,7 @@ BEGIN
                     TO_CHAR(day_date, 'DD Mon YY'),
                     TO_CHAR(day_date, 'DD Month YY'),
                     week_day_number,
-                    CONCAT(to_char(week_day_number),
+                    CONCAT(TO_CHAR(week_day_number),
                            CASE
                                WHEN (week_day_number + 1) > 3 THEN 'th'
                                WHEN (week_day_number + 1) = 1 THEN 'st'
@@ -427,12 +427,12 @@ BEGIN
                     day_cursor - 1,
                     TO_CHAR(day_date, 'MM-DD'),
                     TO_CHAR(CASE
-                                       WHEN (week_day_number = 0)
-                                           THEN day_date - 6
-                                       ELSE day_date - week_day_number + 1 END, 'YY-MM-DD') || ' - ' ||
-                           TO_CHAR(CASE
-                                       WHEN (week_day_number = 0) THEN day_date
-                                       ELSE day_date + 7 - week_day_number END, 'YY-MM-DD'));
+                                WHEN (week_day_number = 0)
+                                    THEN day_date - 6
+                                ELSE day_date - week_day_number + 1 END, 'YY-MM-DD') || ' - ' ||
+                    TO_CHAR(CASE
+                                WHEN (week_day_number = 0) THEN day_date
+                                ELSE day_date + 7 - week_day_number END, 'YY-MM-DD'));
 
             day_cursor := day_cursor + 1;
             day_of_period := day_of_period + 1;
@@ -484,10 +484,10 @@ FROM calendar_dates;
 
 SELECT *
 FROM calendar_dates
-WHERE
-    "date" IN
-    (to_date(current_date), to_date('2023.12.01', 'YYYY.MM.DD'), to_date('2024.01.01', 'YYYY.MM.DD'), to_date('2023-02-25', 'YYYY.MM.DD'), to_date('2022-12-31', 'YYYY.MM.DD'), to_date('2023-03-31', 'YYYY.MM.DD')) ORDER BY
-    "date";
+WHERE "date" IN
+      (TO_DATE(CURRENT_DATE), TO_DATE('2023.12.01', 'YYYY.MM.DD'), TO_DATE('2024.01.01', 'YYYY.MM.DD'), TO_DATE('2023-02-25', 'YYYY.MM.DD'), TO_DATE('2022-12-31', 'YYYY.MM.DD'),
+       TO_DATE('2023-03-31', 'YYYY.MM.DD'))
+ORDER BY "date";
 /*
 result:
 

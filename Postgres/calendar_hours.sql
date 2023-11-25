@@ -34,62 +34,61 @@ DROP TABLE IF EXISTS calendar_hours_swap CASCADE;
 CREATE TABLE calendar_hours_swap
 (
     -- original uniq combination
-    date_hour             char(13) PRIMARY KEY,            -- 'Date and hour YYYY-MM-DD hh -char(13)'
+    date_hour             char(13) PRIMARY KEY,   -- Date and hour YYYY-MM-DD hh -char(13)
     date_hour10           int
-        CHECK (date_hour10 > 0)        NOT NULL,           -- 'YYYYMMDDhh -int'
-    date                  date         NOT NULL,           -- 'UTC date YYYY-MM-DD -date'
+        CHECK (date_hour10 > 0)         NOT NULL, -- YYYYMMDDhh -int
+    date                  date          NOT NULL, -- UTC date YYYY-MM-DD -date
     hour                  smallint
-        CHECK (hour >= 0)              NOT NULL,           -- 'Hour UTC -smallint'
+        CHECK (hour >= 0)               NOT NULL, -- Hour UTC -smallint
     hour_cet              smallint
-        CHECK (hour_cet >= 0)          NOT NULL,           -- 'Hour CET -smallint'
+        CHECK (hour_cet >= 0)           NOT NULL, -- Hour CET -smallint
 
     -- data
-    date_hour_cet         char(13)     NOT NULL,           -- 'Date and hour YYYY-MM-DD hh in CET -char(13)'
-    date_cet              date         NOT NULL,           -- 'CET date YYYY-MM-DD -date'
-    year_month2           char(7)      NOT NULL,           -- 'Year - Month2 UTC YYYY-MM -char(7)'
-    year_month2_cet       char(7)      NOT NULL,           -- 'Year - Month2 CET YYYY-MM -char(7)'
-    first_second          timestamp(6) NOT NULL,           -- 'first second -timestamp(6)'
-    last_second           timestamp(6) NOT NULL,           -- 'last second -timestamp(6)'
-    hour2                 char(2)      NOT NULL,           -- 'Hour UTC -char(2)'
-    hour2_cet             char(2)      NOT NULL,           -- 'Hour CET -char(2)'
-    dd_hh                 char(5)      NOT NULL,           -- 'DD.hh -char(5)'
-    is_last_in_week       boolean      NOT NULL,           -- 'Hour is last in week -boolean'
-    is_last_in_month      boolean      NOT NULL,           -- 'Hour is last in month -boolean'
-    is_last_in_quarter    boolean      NOT NULL,           -- 'Hour is last in quarter -boolean'
-    is_last_in_year       boolean      NOT NULL,           -- 'Hour is last in year -boolean'
+    date_hour_cet         char(13)      NOT NULL, -- Date and hour YYYY-MM-DD hh in CET -char(13)
+    date_cet              date          NOT NULL, -- CET date YYYY-MM-DD -date
+    year_month2           char(7)       NOT NULL, -- Year - Month2 UTC YYYY-MM -char(7)
+    year_month2_cet       char(7)       NOT NULL, -- Year - Month2 CET YYYY-MM -char(7)
+    first_second          timestamp(6)  NOT NULL, -- first second -timestamp(6)
+    last_second           timestamp(6)  NOT NULL, -- last second -timestamp(6)
+    hour2                 char(2)       NOT NULL, -- Hour UTC -char(2)
+    hour2_cet             char(2)       NOT NULL, -- Hour CET -char(2)
+    dd_hh                 char(5)       NOT NULL, -- DD.hh -char(5)
+    is_last_in_week       boolean       NOT NULL, -- Hour is last in week -boolean
+    is_last_in_month      boolean       NOT NULL, -- Hour is last in month -boolean
+    is_last_in_quarter    boolean       NOT NULL, -- Hour is last in quarter -boolean
+    is_last_in_year       boolean       NOT NULL, -- Hour is last in year -boolean
 
-    is_lunch_hour         boolean      NOT NULL,           -- 'Hour 12 13 for weekdays not special -boolean'
-    is_night              boolean      NOT NULL,           -- 'Hour between 22 and 05 -boolean'
-    is_morning            boolean      NOT NULL,           -- 'Hour between 06 and 09 -boolean'
-    is_daylight           boolean      NOT NULL,           -- 'Hour between 10 and 18 -boolean'
-    is_evening            boolean      NOT NULL,           -- 'Hour between 19 and 22 -boolean'
+    is_lunch_hour         boolean       NOT NULL, -- Hour 12 13 for weekdays not special -boolean
+    is_night              boolean       NOT NULL, -- Hour between 22 and 05 -boolean
+    is_morning            boolean       NOT NULL, -- Hour between 06 and 09 -boolean
+    is_daylight           boolean       NOT NULL, -- Hour between 10 and 18 -boolean
+    is_evening            boolean       NOT NULL, -- Hour between 19 and 22 -boolean
 
-    is_working_hour       boolean      NOT NULL,           -- 'Hour 8-11 / 14-18 for weekdays not special -boolean'
-    is_working_day        boolean      NOT NULL,           -- 'Day of hour is working not special -boolean'
-    is_public_holiday     boolean      NOT NULL,           -- 'Is public holiday in -boolean'
-    special_hour          varchar(255) NULL
-                                             DEFAULT NULL, -- 'Special note for hour -varchar(255)'
+    is_working_hour       boolean       NOT NULL, -- Hour 8-11 / 14-18 for weekdays not special -boolean
+    is_working_day        boolean       NOT NULL, -- Day of hour is working not special -boolean
+    is_public_holiday     boolean       NOT NULL, -- Is public holiday in -boolean
+    special_hour          varchar(255)  NULL,     -- Special note for hour -varchar(255)
 
     -- short
-    date_hour_short       char(11)     NOT NULL,           -- 'Date and hour YY-MM-DD hh -char(11)'
+    date_hour_short       char(11)      NOT NULL, -- Date and hour YY-MM-DD hh -char(11)
     date_hour8            int
-        CHECK (date_hour8 > 0)         NOT NULL,           -- 'YYMMDDhh -int'
-    date_short            char(8)      NOT NULL,           -- 'UTC date YY-MM-DD -char(8)'
-    date_hour_cet_short   char(11)     NOT NULL,           -- 'Date and hour YY-MM-DD hh in CET -char(11)'
-    date_cet_short        char(8)      NOT NULL,           -- 'CET date YY-MM-DD -char(8)'
-    year_month2_short     char(5)      NOT NULL,           -- 'Year - Month2 UTC YY-MM -char(5)'
-    year_month2_cet_short char(5)      NOT NULL,           -- 'Year - Month2 CET YY-MM -char(5)'
+        CHECK (date_hour8 > 0)          NOT NULL, -- YYMMDDhh -int
+    date_short            char(8)       NOT NULL, -- UTC date YY-MM-DD -char(8)
+    date_hour_cet_short   char(11)      NOT NULL, -- Date and hour YY-MM-DD hh in CET -char(11)
+    date_cet_short        char(8)       NOT NULL, -- CET date YY-MM-DD -char(8)
+    year_month2_short     char(5)       NOT NULL, -- Year - Month2 UTC YY-MM -char(5)
+    year_month2_cet_short char(5)       NOT NULL, -- Year - Month2 CET YY-MM -char(5)
 
     -- row activity fields
-    created_at            timestamp(6) NOT NULL
+    created_at            timestamp(6)  NOT NULL
         CONSTRAINT df_calendar_hours_created DEFAULT (NOW()),
-    updated_at            timestamp(6) NULL  DEFAULT NULL, -- 'Updated -timestamp(6)'
+    updated_at            timestamp(6)  NULL,     -- Updated -timestamp(6)
 
     -- common fields
-    fullname              varchar(255) NOT NULL,           -- 'DD MMMM YYYY (DayName) -varchar(255)'
-    description           varchar(1000)      DEFAULT NULL  -- ', -- ary for hour of date -varchar(1000)'
+    fullname              varchar(255)  NOT NULL, -- DD MMMM YYYY (DayName) -varchar(255)
+    description           varchar(1000) NULL      -- Commentary for hour of date -varchar(1000)
 
-); -- 'Hours of calendar dates';
+); -- Hours of calendar dates;
 
 DROP INDEX IF EXISTS uniq_index_calendar_hours_date_hour;
 CREATE UNIQUE INDEX uniq_index_calendar_hours_date_hour
@@ -148,12 +147,6 @@ DECLARE
 
 BEGIN
     -- _________________________________________________________________ --
-    day_cursor = (SELECT MIN(date) AS md
-                  FROM calendar_dates);
-    hour_cursor = 0;
-    hour2 = 'XX';
-    dd = (SELECT MAX(date) AS md
-          FROM calendar_dates);
 
     WHILE day_cursor <= dd
         LOOP
@@ -173,11 +166,7 @@ BEGIN
 
             WHILE hour_cursor <= 23
                 LOOP
-                    IF hour_cursor < 10 THEN
-                        hour2 = CONCAT('0', hour_cursor);
-                    ELSE
-                        hour2 = hour_cursor;
-                    END IF;
+                    hour2 := RIGHT(CONCAT('0', hour_cursor), 2);
 
                     calculated_date_hour := CONCAT(day_cursor, ' ', hour2);
                     first_sec := CONCAT(calculated_date_hour, ':00:00');

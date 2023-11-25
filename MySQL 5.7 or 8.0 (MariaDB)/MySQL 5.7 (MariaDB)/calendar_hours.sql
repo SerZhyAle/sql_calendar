@@ -170,13 +170,7 @@ BEGIN
 
             WHILE @hour_cursor <= 23
                 DO
-                    IF @hour_cursor < 10 THEN
-                        SET @hour2 = CONCAT('0', @hour_cursor);
-                    ELSE
-                        SET @hour2 = @hour_cursor;
-                    END IF;
-
-                    -- set @day_cursor = '2023-06-01';
+                    SET @hour2 = RIGHT(CONCAT('0', @hour_cursor), 2);
 
                     SET @calculated_date_hour = CONCAT(@day_cursor, ' ', @hour2);
                     SET @first_sec = CONCAT(@calculated_date_hour, ':00:00');
@@ -496,7 +490,7 @@ date_hour,date_hour_cet,year_month2_cet,date_cet,hour_cet
 SELECT h.date_hour,
    src.*
 FROM data_table AS src
-    JOIN calendar_hours10_short; AS h
+    JOIN calendar_hours10_short AS h
         ON h.date_hour10 = src.date_hour10;
   */
 
