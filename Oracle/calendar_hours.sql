@@ -25,7 +25,7 @@ SELECT to_timestamp('2023-06-01', 'YYYY-MM-DD') AT TIME ZONE 'Europe/Paris' FROM
 
  If you received this then we have summer time shift, so we can create the calendar_hours..
 
-  A code here for Postgres SQL (tested on 16.1)
+  A code here for Oracle SQL
  --
  STEP 1.
  Create the _swap table to be able switch the table in one transaction:

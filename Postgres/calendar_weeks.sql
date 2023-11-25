@@ -18,9 +18,9 @@ SELECT sunday.year_week,
        sunday.week_begin,
        sunday.week_end,
        EXTRACT(MONTH FROM (sunday.date - 7))                 AS month_begin,
-       sunday.month_end,
+       EXTRACT(MONTH FROM sunday.date)                       AS month_end,
        EXTRACT(YEAR FROM (sunday.date + 7))                  AS year_begin,
-       sunday.year_end,
+       EXTRACT(YEAR FROM sunday.date)                        AS year_end,
        CASE
            WHEN sunday.month <> EXTRACT(MONTH FROM (sunday.date - 7))
                THEN TRUE

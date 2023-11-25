@@ -11,16 +11,16 @@
 
 CREATE OR REPLACE VIEW calendar_weeks AS
 (
-SELECT  sunday.year_week,
+SELECT sunday.year_week,
        sunday.year,
        sunday.week,
        RIGHT(CONCAT('0', sunday.week), 2)                                      AS week2c,
        sunday.week_begin,
        sunday.week_end,
        MONTH(DATE_ADD(sunday.date, INTERVAL -7 DAY))                           AS month_begin,
-       sunday.month_end,
+       MONTH(sunday.date)                                                      AS month_end,
        YEAR(DATE_ADD(sunday.date, INTERVAL -7 DAY))                            AS year_begin,
-       sunday.year_end,
+       YEAR(sunday.date)                                                       AS year_end,
        IF(sunday.month <> MONTH(DATE_ADD(sunday.date, INTERVAL -7 DAY)), 1, 0) AS is_week_in_two_months,
        IF(sunday.year <> YEAR(DATE_ADD(sunday.date, INTERVAL -7 DAY)), 1, 0)   AS is_week_in_two_years,
        dates_of_week.weekdays,

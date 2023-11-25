@@ -60,11 +60,11 @@ FROM calendar_dates AS last_day_of_month
                  MIN(hours.date_hour) AS min_date_hour
           FROM calendar_hours AS hours
               JOIN (SELECT year_month2,
-                           SUM(CASE WHEN is_weekday = true then 1 else 0 end)           AS weekdays,
-                           SUM(CASE WHEN is_weekend = true then 1 else 0 end)           AS weekends,
-                           SUM(CASE WHEN special_date IS NOT NULL then 1 else 0 end) AS special_days,
-                           SUM(CASE WHEN is_working_day = TRUE then 1 else 0 end)       AS working_days,
-                           SUM(CASE WHEN is_working_day = TRUE then 8 else 0 end)       AS working_hours
+                           SUM(CASE WHEN is_weekday = TRUE THEN 1 ELSE 0 END)        AS weekdays,
+                           SUM(CASE WHEN is_weekend = TRUE THEN 1 ELSE 0 END)        AS weekends,
+                           SUM(CASE WHEN special_date IS NOT NULL THEN 1 ELSE 0 END) AS special_days,
+                           SUM(CASE WHEN is_working_day = TRUE THEN 1 ELSE 0 END)    AS working_days,
+                           SUM(CASE WHEN is_working_day = TRUE THEN 8 ELSE 0 END)    AS working_hours
                     FROM calendar_dates
                     GROUP BY year_month2) AS dates
                   ON dates.year_month2 = hours.year_month2
@@ -75,11 +75,11 @@ FROM calendar_dates AS last_day_of_month
                  MIN(hours.date_hour) AS min_date_hour_utc_to_cet
           FROM calendar_hours AS hours
               JOIN (SELECT year_month2,
-                           SUM(CASE WHEN is_weekday = true then 1 else 0 end)           AS weekdays,
-                           SUM(CASE WHEN is_weekend = true then 1 else 0 end)           AS weekends,
-                           SUM(CASE WHEN special_date IS NOT NULL then 1 else 0 end) AS special_days,
-                           SUM(CASE WHEN is_working_day = true then 1 else 0 end)       AS working_days,
-                           SUM(CASE WHEN is_working_day = true then 8 else 0 end)       AS working_hours
+                           SUM(CASE WHEN is_weekday = TRUE THEN 1 ELSE 0 END)        AS weekdays,
+                           SUM(CASE WHEN is_weekend = TRUE THEN 1 ELSE 0 END)        AS weekends,
+                           SUM(CASE WHEN special_date IS NOT NULL THEN 1 ELSE 0 END) AS special_days,
+                           SUM(CASE WHEN is_working_day = TRUE THEN 1 ELSE 0 END)    AS working_days,
+                           SUM(CASE WHEN is_working_day = TRUE THEN 8 ELSE 0 END)    AS working_hours
                     FROM calendar_dates
                     GROUP BY year_month2) AS dates
                   ON dates.year_month2 = hours.year_month2_cet
