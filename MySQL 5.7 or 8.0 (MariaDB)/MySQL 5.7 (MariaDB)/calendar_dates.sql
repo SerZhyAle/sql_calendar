@@ -107,7 +107,7 @@ CREATE TABLE calendar_dates_swap
 
     #common fields
     fullname               varchar(255)      NOT NULL COMMENT 'DD MMMM YYYY (DayName) -varchar(255)',
-    description            varchar(1000)              DEFAULT NULL COMMENT 'Commentary for the calendar date -varchar(1000)',
+    description            varchar(1000)     NULL     DEFAULT NULL COMMENT 'Commentary for the calendar date -varchar(1000)',
 
     UNIQUE KEY unique_key_calendar_date (date)
 ) DEFAULT CHARSET = latin1 COMMENT ='Calendar dates';
@@ -156,11 +156,12 @@ BEGIN
     SET @begin_of_period = '2019-10-01';
 
     SET @end_of_period = LAST_DAY(DATE_ADD(@begin_of_period, INTERVAL 3 MONTH));
-    SET @day_num_since_2020 = 1,
+    SET @day_num_since_2020 = 0,
         @week_num_since_2020 = 1,
         @month_num_since_2020 = 0,
-        @quarter_num_since_2020 = 1,
-        @year_num_since_2020 = 0;
+        @quarter_num_since_2020 = 0,
+        @year_num_since_2020 = 0,
+        @day_of_period = 92;
 
     WHILE @day_cursor <= @day_cursor_end
         DO
