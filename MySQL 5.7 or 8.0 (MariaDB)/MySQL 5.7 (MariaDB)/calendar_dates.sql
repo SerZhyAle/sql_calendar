@@ -66,7 +66,7 @@ CREATE TABLE calendar_dates_swap
     year                   smallint          NOT NULL COMMENT 'Year -smallint',
     year2                  tinyint UNSIGNED  NOT NULL COMMENT 'Year last 2 figures -tinyint',
     year2c                 char(2)           NOT NULL COMMENT 'Year last 2 chars -char(2)',
-    days_in_year           smallint UNSIGNED NOT NULL DEFAULT '365' COMMENT 'Amount days in this year def:365 -smallint',
+    days_in_year           smallint UNSIGNED NOT NULL DEFAULT 365 COMMENT 'Amount days in this year def:365 -smallint',
 
     next_date              date              NOT NULL COMMENT 'Next Date -date',
     prev_date              date              NOT NULL COMMENT 'Previous Date -date',

@@ -4,7 +4,9 @@
 ## - *MySQL (MariaDB)*  
 ## - *Microsoft SQL*
 ## - *Oracle SQL*  
-## - *Postgres SQL*  
+## - *Postgres SQL*
+## - *Snowflake*
+## - *As CSV table files (just to import)*
 ### Hours, Dates, Weeks, Months, Quarters, Years
 
 --- 
@@ -21,7 +23,8 @@ The views:
 - **calendar_quarters**
 - **calendar_years**
 
-#### You can check the file *examples_results.zip* with resulted csv files.
+Fast physical JOIN entity for any calendar-related aggregarions.
+#### You can check the file *sql_calendar_csv_files.zip* with resulted csv files.
 
 ---
  ## **calendar_dates** (68 columns)  
