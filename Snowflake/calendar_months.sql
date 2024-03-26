@@ -48,10 +48,14 @@ SELECT last_day_of_month.year_month2,
        last_day_of_month.month_name3,
        last_day_of_month.month_begin,
        last_day_of_month.month_end,
-       DATEDIFF(DAY, first_day_of_month.month_end,
-                last_day_of_month.month_begin) + 1                         AS days_in_month,
-       (DATEDIFF(DAY, first_day_of_month.month_end,
-                 last_day_of_month.month_begin) + 1) * 24                  AS hours_in_month,
+
+       DATEDIFF(DAY,
+                last_day_of_month.month_begin,
+                first_day_of_month.month_end) + 1                          AS days_in_month,
+       (DATEDIFF(DAY,
+                 last_day_of_month.month_begin,
+                 first_day_of_month.month_end) + 1) * 24                   AS hours_in_month,
+
        DATEADD(DAY, -1, first_day_of_month.date)                           AS prev_month_last_day,
        LEFT(DATEADD(DAY, -1, first_day_of_month.date), 7)                  AS prev_year_month2,
        IFF(last_day_of_month.month IN (3, 6, 9, 12), 1, 0)                 AS is_last_in_quarter,
@@ -86,7 +90,7 @@ WHERE last_day_of_month.is_last_day_of_month = 1
 -- check..
 SELECT *
 FROM gear.calendar_months
-order by year_month2;
+ORDER BY year_month2;
 
 /*
  sza(c)
